@@ -5,7 +5,7 @@ window-subtitle = working-directory
 
 font-family = BerkeleyMono Nerd Font
 #font-family = Iosevka Nerd Font
-font-size = 18
+font-size = 16
 # font-thicken = true
 # theme = GruvboxDarkHard
 shell-integration-features = no-cursor,sudo,no-title
@@ -15,7 +15,7 @@ cursor-color = #67C234
 adjust-cursor-thickness = 3
 adjust-cursor-height = 1%
 cursor-click-to-move = true
-adjust-cell-height = 35%
+# adjust-cell-height = 35%
 background-opacity = 0.96
 
 mouse-hide-while-typing = true
@@ -71,6 +71,10 @@ keybind = shift+ctrl+l=goto_split:right
 keybind = cmd+s>z=toggle_split_zoom
 
 keybind = cmd+s>e=equalize_splits
+
+macos-option-as-alt = true
+keybind = super+c=copy_to_clipboard
+keybind = super+v=paste_from_clipboard
 
 # other
 copy-on-select = clipboard

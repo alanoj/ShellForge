@@ -30,13 +30,13 @@
             "fetch_status": true,
             "fetch_upstream_icon": true,
             "fetch_stash_count": true,
-            "branch_icon": "",
+            "branch_icon": "\ue0a0",
             "branch_template": "<#45F1C2>\ue0a0</> {{ .HEAD }}",
             "branch_identical_icon": "≡",
             "branch_ahead_icon": "⇡",
             "branch_behind_icon": "⇣"
           },
-          "template": " {{ if .Detached }}<#ff5555>\uead0</><#A3BE8C>\ue0a0</> Detached{{ else }}{{ .UpstreamIcon }} {{ .HEAD }}{{ end }}{{ if gt .Ahead 0 }} ⇡{{ .Ahead }}{{ end }}{{ if gt .Behind 0 }} ⇣{{ .Behind }}{{ end }}{{ if .Working.Changed }} {{ .Working.String }}{{ end }}{{ if .Staging.Changed }} {{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }} {{ .StashCount }}{{ end }}"
+          "template": " {{ if .Detached }}<#ff5555>\uead0</><#A3BE8C>\ue0a0</> Detached{{ else }}{{ .UpstreamIcon }} {{ .HEAD }}{{ end }}{{ if gt .Ahead 0 }} ⇡{{ .Ahead }}{{ end }}{{ if gt .Behind 0 }} ⇣{{ .Behind }}{{ end }}{{ if .Working.Changed }} {{ .Working.String }}{{ end }}{{ if .Staging.Changed }}  {{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }}  {{ .StashCount }}{{ end }}"
         }
       ],
       "type": "prompt"

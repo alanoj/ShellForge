@@ -174,11 +174,34 @@ else
 fi
 
 ############################################
+# INSTALL CUSTOM init.lua (override)
+############################################
+
+CUSTOM_INIT_SRC="$REPO_DIR/nvim_configs/init.lua"
+CUSTOM_INIT_DST="$NVIM_DIR/init.lua"
+
+if [[ -f "$CUSTOM_INIT_SRC" ]]; then
+  progress "[50%] Installing custom init.lua…"
+
+  # Backup LazyVim's default init.lua
+  if [[ -f "$CUSTOM_INIT_DST" ]]; then
+    cp -f "$CUSTOM_INIT_DST" "$CUSTOM_INIT_DST.lazybak"
+    progress "  • Backed up default init.lua → init.lua.lazybak"
+  fi
+
+  # Copy custom init.lua from repo
+  cp -f "$CUSTOM_INIT_SRC" "$CUSTOM_INIT_DST"
+  progress "  • Custom init.lua installed → $CUSTOM_INIT_DST"
+else
+  progress "[50%] No custom init.lua found at $CUSTOM_INIT_SRC — skipping"
+fi
+
+
+############################################
 # APPLY CUSTOM NVIM LUA CONFIGS BEFORE SYNC (critical)
 ############################################
 progress "[55%] Applying Neovim custom Lua configs BEFORE plugin sync…"
 
-# You renamed repo folder from lua -> lua_configs
 LUA_SRC="$REPO_DIR/nvim_configs/lua_configs"
 LUA_DST="$NVIM_DIR/lua"
 

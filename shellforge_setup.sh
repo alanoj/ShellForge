@@ -18,7 +18,7 @@ OHMY_POSH_DIR="$HOME/.config/ohmyposh"
 GHOSTTY_DIR="$HOME/.config/ghostty"
 
 SKIP_BREW=false
-CLEANRC=false
+CLEAN=false
 REINSTALL=false
 AUTO=false
 
@@ -36,12 +36,12 @@ die() { echo "❌ $*" 1>&2; exit 1; }
 for arg in "$@"; do
   case "$arg" in
     --skip-brew) SKIP_BREW=true ;;
-    --cleanrc) CLEANRC=true ;;
+    -c|--clean) CLEAN=true ;;
     --reinstall) REINSTALL=true ;;
     -a) AUTO=true ;;
     *)
       echo "Unknown argument: $arg"
-      echo "Usage: $0 [-a] [--skip-brew] [--cleanrc] [--reinstall]"
+      echo "Usage: $0 [-a] [--skip-brew] [-c|--clean] [--reinstall]"
       exit 1
       ;;
   esac
@@ -146,9 +146,9 @@ fi
 if [[ -f "$REPO_DIR/.zshrc" ]]; then
   progress "  • Installing .zshrc"
   if [[ -f "$HOME/.zshrc" ]]; then
-    if [[ "$CLEANRC" == "true" ]]; then
+    if [[ "$CLEAN" == "true" ]]; then
       rm -f "$HOME/.zshrc"
-      progress "    - Removed existing ~/.zshrc (--cleanrc)"
+      progress "    - Removed existing ~/.zshrc (--clean)"
     else
       mv -f "$HOME/.zshrc" "$HOME/.zshrc_old"
       progress "    - Backed up existing ~/.zshrc → ~/.zshrc_old"
@@ -226,7 +226,13 @@ if [[ -d "$LUA_SRC" ]]; then
       [[ -e "$f" ]] || continue
       base="$(basename "$f")"
       if [[ -f "$LUA_DST/config/$base" ]]; then
-        cp -f "$LUA_DST/config/$base" "$LUA_DST/config/${base}.backup"
+        if [[ "$CLEAN" == "true" ]]; then
+          rm -f "$LUA_DST/config/$base"
+          progress "    - Overwriting $base (--clean)"
+        else
+          cp -f "$LUA_DST/config/$base" "$LUA_DST/config/${base}.backup"
+          progress "    - Backed up $base → ${base}.backup"
+        fi
       fi
     done
 

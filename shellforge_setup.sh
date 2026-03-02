@@ -160,13 +160,16 @@ else
     progress "  • No .zshrc found in repo root — skipping"
 fi
 
-# Ensure XDG_CONFIG_HOME is set so Ghostty reads ~/.config/ghostty
-if ! grep -q "export XDG_CONFIG_HOME" "$HOME/.zshrc"; then
-    {
-        echo ""
-        echo "# Set XDG config dir so Ghostty uses ~/.config/ghostty"
-        echo "export XDG_CONFIG_HOME=\"\$HOME/.config\""
-    } >> "$HOME/.zshrc"
+# Ensure GHOSTTY_CONFIG_HOME is defined so Ghostty uses ~/.config/ghostty
+if ! grep -q "export GHOSTTY_CONFIG_HOME" "$HOME/.zshrc"; then
+  {
+    echo ""
+    echo "# Set Ghostty config dir to ~/.config/ghostty"
+    echo "export GHOSTTY_CONFIG_HOME=\"\$HOME/.config/ghostty\""
+  } >> "$HOME/.zshrc"
+  progress "  • Added GHOSTTY_CONFIG_HOME to ~/.zshrc"
+else
+  progress "  • GHOSTTY_CONFIG_HOME already defined in ~/.zshrc — skipping"
 fi
 
 ############################################

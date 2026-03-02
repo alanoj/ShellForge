@@ -47,11 +47,17 @@ vim.keymap.set('n', '<C-u>', '<C-u>zz', opts)
 vim.keymap.set('n', 'n', 'nzzzv', opts)
 vim.keymap.set('n', 'N', 'Nzzzv', opts)
 
--- Resize with arrows
-vim.keymap.set('n', '<Up>', ':resize -2<CR>', opts)
-vim.keymap.set('n', '<Down>', ':resize +2<CR>', opts)
-vim.keymap.set('n', '<Left>', ':vertical resize -2<CR>', opts)
-vim.keymap.set('n', '<Right>', ':vertical resize +2<CR>', opts)
+-- Window navigation with arrow keys
+vim.keymap.set("n", "<Left>",  "<C-w>h", { desc = "Move focus to left window" })
+vim.keymap.set("n", "<Right>", "<C-w>l", { desc = "Move focus to right window" })
+vim.keymap.set("n", "<Up>",    "<C-w>k", { desc = "Move focus to upper window" })
+vim.keymap.set("n", "<Down>",  "<C-w>j", { desc = "Move focus to lower window" })
+
+-- Resize with Ctrl + Arrows
+vim.keymap.set("n", "<C-Left>",  "<Cmd>vertical resize -2<CR>")
+vim.keymap.set("n", "<C-Right>", "<Cmd>vertical resize +2<CR>")
+vim.keymap.set("n", "<C-Up>",    "<Cmd>resize +2<CR>")
+vim.keymap.set("n", "<C-Down>",  "<Cmd>resize -2<CR>")
 
 -- Buffers
 vim.keymap.set('n', '<Tab>', ':bnext<CR>', opts)

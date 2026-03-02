@@ -42,3 +42,8 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   group = highlight_group,
   pattern = '*',
 })
+
+-- Custom user command to switch neovim themes
+vim.api.nvim_create_user_command("Theme", function(opts)
+  require("config.themes").apply(opts.args)
+end, { nargs = 1 })

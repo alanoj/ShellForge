@@ -8,6 +8,22 @@ vim.keymap.set({ 'n', 'v' }, '<Space>', '<Nop>', { silent = true })
 -- For conciseness
 local opts = { noremap = true, silent = true }
 
+-- Switch between theme plugins
+
+-- Switch to kanagawa theme
+vim.keymap.set("n", "<leader>tt", function()
+  require("config.themes").apply("kanagawa")
+end, { desc = "Theme: Kanagawa" })
+
+-- Switch to rose pine theme
+vim.keymap.set("n", "<leader>tr", function()
+  require("config.themes").apply("rose-pine")
+end, { desc = "Theme: Rose Pine" })
+
+vim.keymap.set("n", "<leader>tc", function()
+  require("config.themes").apply("catpuccino")
+end, { desc = "Theme: Catpuccino" })
+
 -- save file
 vim.keymap.set('n', '<C-s>', '<cmd> w <CR>', opts)
 

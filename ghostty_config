@@ -4,10 +4,8 @@ shell-integration = zsh
 window-subtitle = working-directory
 
 font-family = BerkeleyMono Nerd Font
-#font-family = Iosevka Nerd Font
-font-size = 16
-# font-thicken = true
-# theme = GruvboxDarkHard
+font-size = 15
+theme = Rose Pine
 shell-integration-features = no-cursor,sudo,no-title
 cursor-style = bar
 cursor-style-blink = true
@@ -15,8 +13,7 @@ cursor-color = #67C234
 adjust-cursor-thickness = 3
 adjust-cursor-height = 1%
 cursor-click-to-move = true
-# adjust-cell-height = 35%
-background-opacity = 0.96
+background-opacity = 0.98
 
 mouse-hide-while-typing = true
 mouse-scroll-multiplier = 2
@@ -25,11 +22,7 @@ window-padding-balance = true
 window-save-state = always
 macos-titlebar-style=transparent
 window-colorspace = "display-p3"
-background = 1C2021
-background-blur = 15
-background-opacity = 0.95
 
-# minimum-contrast = 5.1
 foreground = d4be98
 
 

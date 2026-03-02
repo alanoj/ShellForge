@@ -33,6 +33,9 @@ vim.keymap.set('n', '<leader>sn', '<cmd>noautocmd w <CR>', opts)
 -- quit file
 vim.keymap.set('n', '<C-q>', '<cmd> q <CR>', opts)
 
+-- Dismiss Noice Message
+vim.keymap.set("n", "<leader>nd", "<cmd>NoiceDismiss<CR>", { desc = "Dismiss Noice Message" })
+
 -- delete single character without copying into register
 vim.keymap.set('n', 'x', '"_x', opts)
 
@@ -83,6 +86,11 @@ vim.keymap.set('v', '>', '>gv', opts)
 
 -- Keep last yanked when pasting
 vim.keymap.set('v', 'p', '"_dP', opts)
+
+-- Search navigation
+vim.keymap.set("n", "<Tab>", "n", { desc = "Next search match" })
+vim.keymap.set("n", "<S-Tab>", "N", { desc = "Prev search match" })
+vim.keymap.set("n", "<CR>", "<CR>", { desc = "Accept search" })
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', function()

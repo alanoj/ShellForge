@@ -35,7 +35,7 @@ die() { echo "❌ $*" 1>&2; exit 1; }
 ############################################
 for arg in "$@"; do
   case "$arg" in
-    --skip-brew) SKIP_BREW=true ;;
+    -b|--skip-brew) SKIP_BREW=true ;;
     -c|--clean) CLEAN=true ;;
     --reinstall) REINSTALL=true ;;
     -a) AUTO=true ;;

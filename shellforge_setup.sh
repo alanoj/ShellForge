@@ -16,6 +16,7 @@ REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 NVIM_DIR="$HOME/.config/nvim"
 OHMY_POSH_DIR="$HOME/.config/ohmyposh"
 GHOSTTY_DIR="$HOME/.config/ghostty"
+GHOSTTY_DEFAULT_DIR="$HOME/Library/Application\ Support/com.mitchellh.ghostty"
 
 SKIP_BREW=false
 CLEAN=false
@@ -124,7 +125,13 @@ fi
 progress "[25%] Setting up terminal config files…"
 
 ensure_dir "$GHOSTTY_DIR"
+ensure_dir "$GHOSTTY_DEFAULT_DIR"
 ensure_dir "$OHMY_POSH_DIR"
+
+if [[ -f "$GHOSTTY_DEFAULT_DIR/config" ]]; then
+    rm -f "$GHOSTTY_DEFAULT_DIR/config"
+    progress "  • Removed default ghostty config file from $GHOSTTY_DIR/config"
+fi
 
 # Ghostty config (repo root file named: config)
 if [[ -f "$REPO_DIR/ghostty_config" ]]; then

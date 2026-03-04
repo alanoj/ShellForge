@@ -24,12 +24,81 @@ REINSTALL=false
 AUTO=false
 
 ############################################
-# Helpers
+# Helpers + CLI UI
 ############################################
-info() { echo "⟩⟩ $*"; }
-progress() { printf "➤ %s\n" "$*"; }
+
+GREEN="\033[1;32m"
+BLUE="\033[1;34m"
+CYAN="\033[1;36m"
+RESET="\033[0m"
+
+SPINNER_FRAMES=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
+
 ensure_dir() { mkdir -p "$1"; }
-die() { echo "❌ $*" 1>&2; exit 1; }
+
+die() {
+    echo -e "${GREEN}❌ $*${RESET}" 1>&2
+    exit 1
+}
+
+info() {
+    printf "${GREEN}✔ %s${RESET}\n" "$*"
+}
+
+# Dynamic progress bar
+progress_bar() {
+    local pct="$1"
+    local msg="$2"
+    
+    local cols
+    cols=$(tput cols 2>/dev/null || echo 80)
+    
+    local width=$((cols-40))
+    [[ $width -lt 20 ]] && width=20
+    
+    local filled=$((pct * width / 100))
+    local empty=$((width - filled))
+    
+    printf "\r${CYAN}[%3d%%] [" "$pct"
+    
+    for ((i=0;i<filled;i++)); do printf "█"; done
+    for ((i=0;i<empty;i++)); do printf "░"; done
+    
+    printf "]${RESET} %-40s" "$msg"
+}
+
+# Spinner for long tasks
+spinner() {
+    local pid=$!
+    local msg="$1"
+    local i=0
+    
+    while kill -0 "$pid" 2>/dev/null; do
+        printf "\r${BLUE}[%s]${RESET} %s" "${SPINNER_FRAMES[i]}" "$msg"
+        i=$(((i+1)%${#SPINNER_FRAMES[@]}))
+        sleep 0.08
+    done
+}
+
+# progress() parses existing [xx%] lines and converts them
+progress() {
+    local msg="$*"
+    
+    if [[ $msg =~ \[[[:space:]]*([0-9]+)%[[:space:]]*\] ]]; then
+        local pct="${BASH_REMATCH[1]}"
+        
+        local clean
+        clean=$(echo "$msg" | sed -E 's/^\[[[:space:]]*[0-9]+%[[:space:]]*\][[:space:]]*//')
+        
+        progress_bar "$pct" "$clean"
+        
+        if [[ "$pct" -ge 100 ]]; then
+            echo
+        fi
+    else
+        printf "\r%s\n" "$msg"
+    fi
+}
 
 ############################################
 # ARGUMENT PARSING
@@ -69,7 +138,7 @@ if [[ "$SKIP_BREW" == "false" ]]; then
     fi
     
     progress "[ 8% ] Updating Homebrew…"
-    brew update || true
+    brew update >/dev/null 2>&1 || true
     
     FORMULAS=(
         git gh neovim oh-my-posh fzf zoxide
@@ -84,7 +153,7 @@ if [[ "$SKIP_BREW" == "false" ]]; then
             progress "  • $f already installed"
         else
             progress "  • Installing $f"
-            brew install "$f"
+            brew install "$f" >/dev/null 2>&1
         fi
     done
     
@@ -169,14 +238,14 @@ fi
 
 # Ensure GHOSTTY_CONFIG_HOME is defined so Ghostty uses ~/.config/ghostty
 if ! grep -q "export GHOSTTY_CONFIG_HOME" "$HOME/.zshrc"; then
-  {
-    echo ""
-    echo "# Set Ghostty config dir to ~/.config/ghostty"
-    echo "export GHOSTTY_CONFIG_HOME=\"\$HOME/.config/ghostty\""
-  } >> "$HOME/.zshrc"
-  progress "  • Added GHOSTTY_CONFIG_HOME to ~/.zshrc"
+    {
+        echo ""
+        echo "# Set Ghostty config dir to ~/.config/ghostty"
+        echo "export GHOSTTY_CONFIG_HOME=\"\$HOME/.config/ghostty\""
+    } >> "$HOME/.zshrc"
+    progress "  • Added GHOSTTY_CONFIG_HOME to ~/.zshrc"
 else
-  progress "  • GHOSTTY_CONFIG_HOME already defined in ~/.zshrc — skipping"
+    progress "  • GHOSTTY_CONFIG_HOME already defined in ~/.zshrc — skipping"
 fi
 
 ############################################
@@ -185,7 +254,7 @@ fi
 progress "[40%] Ensuring LazyVim starter exists…"
 if [[ ! -d "$NVIM_DIR" ]]; then
     progress "  • Cloning LazyVim starter to $NVIM_DIR …"
-    git clone https://github.com/LazyVim/starter "$NVIM_DIR"
+    git clone https://github.com/LazyVim/starter "$NVIM_DIR" >/dev/null 2>&1
     rm -rf "$NVIM_DIR/.git"
     progress "  • LazyVim starter installed"
 else

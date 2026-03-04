@@ -1,0 +1,25 @@
+# Operating System Files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+.Spotlight-V100
+.Trashes
+
+# Temporary/Log Files
+*.log
+*.tmp
+*.temp
+temp/
+logs/
+
+# Compiled/Build Artifacts (place project-specific build folders here)
+/build
+/dist
+/target
+
+# IDE/Editor specific files (add specific IDE patterns here)
+.vscode/
+.idea/
+
+# Sensitive files/environment variables
+.env

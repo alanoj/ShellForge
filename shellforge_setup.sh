@@ -114,53 +114,33 @@ run_with_spinner() {
 # Unified Progress Bar Renderer
 ############################################
 
-progress_bar_anim() {
+progress_block() {
     
-    local pid=""
-    local pct=""
-    local msg=""
-    
-    if [[ $# -eq 3 ]]; then
-        pid="$1"
-        pct="$2"
-        msg="$3"
-    else
-        pct="$1"
-        msg="$2"
-    fi
+    local pct=$1
+    local pkg="$2"
     
     local cols
     cols=$(tput cols 2>/dev/null || echo 80)
     
-    local width=$((cols-40))
+    local width=$((cols-30))
     [[ $width -lt 20 ]] && width=20
     
+    local filled=$((pct * width / 100))
+    local empty=$((width - filled))
+    
     local spin='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
-    local s=0
+    local s=$((RANDOM % 10))
     
-    draw_bar() {
-        
-        local filled=$((pct * width / 100))
-        local empty=$((width - filled))
-        
-        printf "\033[2K\r%b[%s] [" "$BLUE" "${spin:$s:1}"
-        
-        for ((i=0;i<filled;i++)); do printf "█"; done
-        for ((i=0;i<empty;i++)); do printf "░"; done
-        
-        printf "]%b %s" "$RESET" "$msg"
-        
-    }
+    printf "\033[3A"        # move cursor up 3 lines
+    printf "\033[2K\r%b[%s]%b Installing packages\n" "$BLUE" "${spin:$s:1}" "$RESET"
     
-    if [[ -n "$pid" ]]; then
-        while kill -0 "$pid" 2>/dev/null; do
-            s=$(( (s+1) %10 ))
-            draw_bar
-            sleep 0.08
-        done
-    fi
+    printf "\033[2K\r["
+    for ((i=0;i<filled;i++)); do printf "█"; done
+    for ((i=0;i<empty;i++)); do printf "░"; done
+    printf "] %d%%\n" "$pct"
     
-    draw_bar
+    printf "\033[2K\rCurrent: %s\n" "$pkg"
+    
 }
 
 ############################################
@@ -224,6 +204,10 @@ if [[ "$SKIP_BREW" == "false" ]]; then
     )
     
     section "Installing Packages"
+    echo
+    echo "Installing packages"
+    echo
+    echo
     
     total=${#FORMULAS[@]}
     count=0
@@ -238,18 +222,18 @@ if [[ "$SKIP_BREW" == "false" ]]; then
             brew install "$f" >/dev/null 2>&1 &
             pid=$!
             
-            progress_bar_anim "$pid" "$pct" "Installing packages: $f"
+            progress_block "$pct" "$f"
             
             wait "$pid"
             
         else
-            progress_bar_anim "$pct" "Skipping (already installed): $f"
+            progress_block "$pct" "Skipping: $f"
             sleep 0.2
         fi
         
     done
     
-    progress_bar_anim 100 "All packages installed"
+    progress_block 100 "All packages installed"
     printf "\n"
     
     ############################################
@@ -279,21 +263,26 @@ if [[ "$SKIP_BREW" == "false" ]]; then
         xcode-select --install || true
     fi
     
-    ############################################
-    # Ghostty
-    ############################################
-    
-    next_step "Ghostty Terminal"
-    
-    if [[ -d "/Applications/Ghostty.app" ]]; then
-        step "Ghostty already installed"
-    else
-        run_with_spinner "Installing Ghostty" brew install --cask ghostty
-    fi
     
 else
     next_step "Skipping Brew Installs"
     warn "--skip-brew enabled"
+fi
+
+############################################
+# Ghostty
+############################################
+
+next_step "Ghostty Terminal"
+
+if [[ -d "/Applications/Ghostty.app" ]]; then
+    step "Ghostty already installed"
+else
+    if [[ "$SKIP_BREW" == "false" ]]; then
+        run_with_spinner "Installing Ghostty" brew install --cask ghostty
+    else
+        warn "Ghostty install skipped because --skip-brew is enabled"
+    fi
 fi
 
 ############################################
@@ -321,6 +310,8 @@ fi
 if [[ -f "$REPO_DIR/shellforge.omp.json" ]]; then
     cp -f "$REPO_DIR/shellforge.omp.json" "$OHMY_POSH_DIR/shellforge.omp.json"
     step "OhMyPosh theme installed"
+    echo "Reloading prompt..."
+    exec zsh
 else
     warn "OhMyPosh theme missing"
 fi

@@ -1,10 +1,11 @@
-This is the configuration file for Ghostty.
+# Config file for Ghostty.
 
 shell-integration = zsh
 window-subtitle = working-directory
 
-font-family = BerkeleyMono Nerd Font
-font-size = 16
+font-family = FiraCode Nerd Font Propo
+font-style = "Medium"
+font-size = 18
 theme = Rose Pine
 shell-integration-features = no-cursor,sudo,no-title
 cursor-style = bar

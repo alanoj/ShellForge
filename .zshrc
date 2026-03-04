@@ -69,6 +69,8 @@ bindkey "^[[A" history-search-backward
 bindkey "^[[B" history-search-forward
 bindkey '^R' history-substring-search-up
 bindkey '^[w' kill-region
+bindkey "^[b" backward-word
+bindkey "^[f" forward-word
 
 ########################################
 # Completion Styling

@@ -310,8 +310,6 @@ fi
 if [[ -f "$REPO_DIR/shellforge.omp.json" ]]; then
     cp -f "$REPO_DIR/shellforge.omp.json" "$OHMY_POSH_DIR/shellforge.omp.json"
     step "OhMyPosh theme installed"
-    echo "Reloading prompt..."
-    exec zsh
 else
     warn "OhMyPosh theme missing"
 fi
@@ -441,3 +439,6 @@ echo "Next steps:"
 echo "  exec zsh"
 echo "  nvim"
 echo
+echo
+echo "Reloading shell to apply Oh My Posh and zsh config..."
+exec zsh

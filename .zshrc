@@ -1,17 +1,19 @@
 export PATH="$HOME/bin:/usr/local/bin:/Library/TeX/texbin:$PATH"
-
+# Set XDG config dir so Ghostty uses ~/.config/ghostty
+export XDG_CONFIG_HOME="$HOME/.config"
+export GHOSTTY_CONFIG_HOME="$HOME/.config/ghostty"
 # ESP-IDF (optional – only if installed)
 export IDF_TOOLS_PATH="$HOME/.espressif"
 export PATH="$IDF_TOOLS_PATH/tools/xtensa-esp-elf/esp-14.2.0_20241119/xtensa-esp-elf/bin:$PATH"
 export PATH="$IDF_TOOLS_PATH/tools/openocd-esp32/v0.12.0-esp32-20241016/openocd-esp32/bin:$PATH"
 
 export TERM="xterm-256color"
-
+export POSH_THEME_RELOAD=true
 ########################################
 # Homebrew Environment
 ########################################
 if command -v brew &>/dev/null; then
-  eval "$(/opt/homebrew/bin/brew shellenv)"
+    eval "$(/opt/homebrew/bin/brew shellenv)"
 fi
 
 ########################################
@@ -20,8 +22,8 @@ fi
 ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
 
 if [ ! -d "$ZINIT_HOME" ]; then
-  mkdir -p "$(dirname "$ZINIT_HOME")"
-  git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
+    mkdir -p "$(dirname "$ZINIT_HOME")"
+    git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
 fi
 
 source "${ZINIT_HOME}/zinit.zsh"
@@ -41,7 +43,7 @@ zinit cdreplay -q
 # Oh My Posh (ShellForge Theme)
 ########################################
 if [[ "$TERM_PROGRAM" != "Apple_Terminal" ]]; then
-  eval "$(oh-my-posh init zsh --config ~/.config/ohmyposh/shellforge.omp.json)"
+    eval "$(oh-my-posh init zsh --config ~/.config/ohmyposh/shellforge.omp.json)"
 fi
 
 ########################################
@@ -67,6 +69,8 @@ bindkey "^[[A" history-search-backward
 bindkey "^[[B" history-search-forward
 bindkey '^R' history-substring-search-up
 bindkey '^[w' kill-region
+bindkey "^[b" backward-word
+bindkey "^[f" forward-word
 
 ########################################
 # Completion Styling
@@ -87,7 +91,7 @@ eval "$(zoxide init zsh)"
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 if [ -f "$HOME/.local/bin/env" ]; then
-  . "$HOME/.local/bin/env"
+    . "$HOME/.local/bin/env"
 fi
 
 ########################################

@@ -3,12 +3,6 @@ set -euo pipefail
 
 ############################################
 # ShellForge Setup Script
-# - Interactive (default) + Automated (-a) modes
-# - Idempotent brew installs
-# - Ghostty config + OhMyPosh theme + .zshrc install
-# - LazyVim starter clone
-# - Inject custom Lua configs BEFORE sync (critical)
-# - Headless sync uses explicit init.lua
 ############################################
 
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -16,7 +10,7 @@ REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 NVIM_DIR="$HOME/.config/nvim"
 OHMY_POSH_DIR="$HOME/.config/ohmyposh"
 GHOSTTY_DIR="$HOME/.config/ghostty"
-GHOSTTY_DEFAULT_DIR="$HOME/Library/Application\ Support/com.mitchellh.ghostty"
+GHOSTTY_DEFAULT_DIR="$HOME/Library/Application Support/com.mitchellh.ghostty"
 
 SKIP_BREW=false
 CLEAN=false
@@ -24,31 +18,116 @@ REINSTALL=false
 AUTO=false
 
 ############################################
-# Helpers + CLI UI
+# Colors
 ############################################
 
 GREEN="\033[1;32m"
 BLUE="\033[1;34m"
 CYAN="\033[1;36m"
+YELLOW="\033[1;33m"
 RESET="\033[0m"
 
-SPINNER_FRAMES=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
+############################################
+# Banner
+############################################
 
-ensure_dir() { mkdir -p "$1"; }
+banner() {
+    printf "%b\n" "$CYAN"
+    printf "███████╗██╗  ██╗███████╗██╗     ██╗      ███████╗ ██████╗ ██████╗  ██████╗ ███████╗\n"
+    printf "██╔════╝██║  ██║██╔════╝██║     ██║      ██╔════╝██╔═══██╗██╔══██╗██╔════╝ ██╔════╝\n"
+    printf "███████╗███████║█████╗  ██║     ██║      █████╗  ██║   ██║██████╔╝██║  ███╗█████╗  \n"
+    printf "╚════██║██╔══██║██╔══╝  ██║     ██║      ██╔══╝  ██║   ██║██╔══██╗██║   ██║██╔══╝  \n"
+    printf "███████║██║  ██║███████╗███████╗███████╗ ██║     ╚██████╔╝██║  ██║╚██████╔╝███████╗\n"
+    printf "╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝ ╚═╝      ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝\n"
+    printf "%b\n" "$RESET"
+    
+    printf "%bDeveloper Environment Installer%b\n\n" "$CYAN" "$RESET"
+}
+
+############################################
+# Step Counter
+############################################
+
+TOTAL_STEPS=8
+CURRENT_STEP=0
+
+next_step() {
+    CURRENT_STEP=$((CURRENT_STEP+1))
+    printf "\n%b[%d/%d]%b %s\n" "$CYAN" "$CURRENT_STEP" "$TOTAL_STEPS" "$RESET" "$1"
+}
+
+############################################
+# UI Helpers
+############################################
+
+section() {
+    printf "\n%b━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━%b\n" "$BLUE" "$RESET"
+    printf "%b▶ %s%b\n" "$BLUE" "$1" "$RESET"
+    printf "%b━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━%b\n" "$BLUE" "$RESET"
+}
+
+step() { printf "  %b✔%b %s\n" "$GREEN" "$RESET" "$1"; }
+task() { printf "  %b➜%b %s\n" "$CYAN" "$RESET" "$1"; }
+warn() { printf "  %b⚠%b %s\n" "$YELLOW" "$RESET" "$1"; }
 
 die() {
-    echo -e "${GREEN}❌ $*${RESET}" 1>&2
+    printf "%b❌ %s%b\n" "$YELLOW" "$1" "$RESET"
     exit 1
 }
 
-info() {
-    printf "${GREEN}✔ %s${RESET}\n" "$*"
+ensure_dir() { mkdir -p "$1"; }
+
+############################################
+# Spinner
+############################################
+
+spinner() {
+    local pid=$1
+    local msg="$2"
+    local spin='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
+    local i=0
+    
+    tput civis
+    
+    while kill -0 "$pid" 2>/dev/null; do
+        i=$(( (i+1) %10 ))
+        printf "\r%b[%s]%b %s" "$BLUE" "${spin:$i:1}" "$RESET" "$msg"
+        sleep .1
+    done
+    
+    tput cnorm
+    printf "\r%b✔%b %s\n" "$GREEN" "$RESET" "$msg"
 }
 
-# Dynamic progress bar
-progress_bar() {
-    local pct="$1"
-    local msg="$2"
+run_with_spinner() {
+    local msg="$1"
+    shift
+    
+    "$@" >/dev/null 2>&1 &
+    local pid=$!
+    
+    spinner "$pid" "$msg"
+    wait "$pid"
+}
+
+############################################
+# Unified Progress Bar Renderer
+############################################
+
+progress_bar_anim() {
+    
+    local pid=""
+    local pct=""
+    local msg=""
+    
+    if [[ $# -eq 3 ]]; then
+        pid="$1"
+        pct="$2"
+        msg="$3"
+    else
+        pct="$1"
+        msg="$2"
+    fi
     
     local cols
     cols=$(tput cols 2>/dev/null || echo 80)
@@ -56,53 +135,38 @@ progress_bar() {
     local width=$((cols-40))
     [[ $width -lt 20 ]] && width=20
     
-    local filled=$((pct * width / 100))
-    local empty=$((width - filled))
+    local spin='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
+    local s=0
     
-    printf "\r${CYAN}[%3d%%] [" "$pct"
-    
-    for ((i=0;i<filled;i++)); do printf "█"; done
-    for ((i=0;i<empty;i++)); do printf "░"; done
-    
-    printf "]${RESET} %-40s" "$msg"
-}
-
-# Spinner for long tasks
-spinner() {
-    local pid=$!
-    local msg="$1"
-    local i=0
-    
-    while kill -0 "$pid" 2>/dev/null; do
-        printf "\r${BLUE}[%s]${RESET} %s" "${SPINNER_FRAMES[i]}" "$msg"
-        i=$(((i+1)%${#SPINNER_FRAMES[@]}))
-        sleep 0.08
-    done
-}
-
-# progress() parses existing [xx%] lines and converts them
-progress() {
-    local msg="$*"
-    
-    if [[ $msg =~ \[[[:space:]]*([0-9]+)%[[:space:]]*\] ]]; then
-        local pct="${BASH_REMATCH[1]}"
+    draw_bar() {
         
-        local clean
-        clean=$(echo "$msg" | sed -E 's/^\[[[:space:]]*[0-9]+%[[:space:]]*\][[:space:]]*//')
+        local filled=$((pct * width / 100))
+        local empty=$((width - filled))
         
-        progress_bar "$pct" "$clean"
+        printf "\033[2K\r%b[%s] [" "$BLUE" "${spin:$s:1}"
         
-        if [[ "$pct" -ge 100 ]]; then
-            echo
-        fi
-    else
-        printf "\r%s\n" "$msg"
+        for ((i=0;i<filled;i++)); do printf "█"; done
+        for ((i=0;i<empty;i++)); do printf "░"; done
+        
+        printf "]%b %s" "$RESET" "$msg"
+        
+    }
+    
+    if [[ -n "$pid" ]]; then
+        while kill -0 "$pid" 2>/dev/null; do
+            s=$(( (s+1) %10 ))
+            draw_bar
+            sleep 0.08
+        done
     fi
+    
+    draw_bar
 }
 
 ############################################
 # ARGUMENT PARSING
 ############################################
+
 for arg in "$@"; do
     case "$arg" in
         -b|--skip-brew) SKIP_BREW=true ;;
@@ -117,28 +181,40 @@ for arg in "$@"; do
     esac
 done
 
+banner
+
 ############################################
-# REINSTALL MODE
+# Reinstall Mode
 ############################################
+
 if [[ "$REINSTALL" == "true" ]]; then
-    progress "[ 1% ] Reinstall mode: wiping Neovim config & state…"
-    rm -rf "$NVIM_DIR" "$HOME/.local/share/nvim" "$HOME/.local/state/nvim"
+    next_step "Reinstall Mode"
+    task "Removing existing Neovim state"
+    
+    rm -rf "$NVIM_DIR"
+    rm -rf "$HOME/.local/share/nvim"
+    rm -rf "$HOME/.local/state/nvim"
+    
+    step "Neovim reset complete"
 fi
 
 ############################################
-# BREW + PACKAGE INSTALL
+# Brew Setup
 ############################################
+
 if [[ "$SKIP_BREW" == "false" ]]; then
-    progress "[ 5% ] Checking Homebrew…"
+    
+    next_step "Homebrew Setup"
+    
     if ! command -v brew &>/dev/null; then
-        progress "Homebrew not found — installing…"
+        run_with_spinner \
+        "Installing Homebrew" \
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     else
-        progress "Homebrew already installed"
+        step "Homebrew already installed"
     fi
     
-    progress "[ 8% ] Updating Homebrew…"
-    brew update >/dev/null 2>&1 || true
+    run_with_spinner "Updating Homebrew" brew update
     
     FORMULAS=(
         git gh neovim oh-my-posh fzf zoxide
@@ -147,51 +223,84 @@ if [[ "$SKIP_BREW" == "false" ]]; then
         dart-sdk
     )
     
-    progress "[12%] Installing required Homebrew formulae (idempotent)…"
+    section "Installing Packages"
+    
+    total=${#FORMULAS[@]}
+    count=0
+    
     for f in "${FORMULAS[@]}"; do
-        if brew list "$f" &>/dev/null; then
-            progress "  • $f already installed"
+        
+        count=$((count + 1))
+        pct=$((count * 100 / total))
+        
+        if ! brew list "$f" &>/dev/null; then
+            
+            brew install "$f" >/dev/null 2>&1 &
+            pid=$!
+            
+            progress_bar_anim "$pid" "$pct" "Installing packages: $f"
+            
+            wait "$pid"
+            
         else
-            progress "  • Installing $f"
-            brew install "$f" >/dev/null 2>&1
+            progress_bar_anim "$pct" "Skipping (already installed): $f"
+            sleep 0.2
         fi
+        
     done
     
-    # Buf for protobuf/gRPC tooling
-    progress "[16%] Ensuring buf is installed…"
-    brew tap bufbuild/buf 2>/dev/null || true
+    progress_bar_anim 100 "All packages installed"
+    printf "\n"
+    
+    ############################################
+    # Buf
+    ############################################
+    
+    next_step "Buf Setup"
+    
+    brew tap bufbuild/buf >/dev/null 2>&1 || true
+    
     if brew list buf &>/dev/null; then
-        progress "  • buf already installed"
+        step "buf already installed"
     else
-        progress "  • Installing buf…"
-        brew install buf
+        run_with_spinner "Installing buf" brew install buf
     fi
     
-    # Xcode CLT if missing
-    progress "[18%] Checking Xcode Command Line Tools…"
+    ############################################
+    # Xcode CLI
+    ############################################
+    
+    next_step "Xcode CLI Tools"
+    
     if xcode-select -p &>/dev/null; then
-        progress "  • Xcode CLI tools already installed"
+        step "Xcode CLI tools already installed"
     else
-        progress "  • Installing Xcode CLI tools…"
+        warn "Installing Xcode CLI tools"
         xcode-select --install || true
     fi
     
-    # Ghostty cask (safe if already installed)
-    progress "[20%] Ensuring Ghostty is installed…"
+    ############################################
+    # Ghostty
+    ############################################
+    
+    next_step "Ghostty Terminal"
+    
     if [[ -d "/Applications/Ghostty.app" ]]; then
-        progress "  • Ghostty already installed"
+        step "Ghostty already installed"
     else
-        progress "  • Installing Ghostty (cask)…"
-        brew install --cask ghostty
+        run_with_spinner "Installing Ghostty" brew install --cask ghostty
     fi
+    
 else
-    progress "[12%] Skipping Homebrew installs (--skip-brew)"
+    next_step "Skipping Brew Installs"
+    warn "--skip-brew enabled"
 fi
 
 ############################################
-# CONFIG FILES (Ghostty + OhMyPosh + .zshrc)
+# Config Files
 ############################################
-progress "[25%] Setting up terminal config files…"
+
+next_step "Installing Config Files"
 
 ensure_dir "$GHOSTTY_DIR"
 ensure_dir "$GHOSTTY_DEFAULT_DIR"
@@ -199,177 +308,145 @@ ensure_dir "$OHMY_POSH_DIR"
 
 if [[ -f "$GHOSTTY_DEFAULT_DIR/config" ]]; then
     rm -f "$GHOSTTY_DEFAULT_DIR/config"
-    progress "  • Removed default ghostty config file from $GHOSTTY_DIR/config"
+    step "Removed default ghostty config"
 fi
 
-# Ghostty config (repo root file named: config)
 if [[ -f "$REPO_DIR/ghostty_config" ]]; then
     cp -f "$REPO_DIR/ghostty_config" "$GHOSTTY_DIR/config"
-    progress "  • Ghostty config installed → $GHOSTTY_DIR/config"
+    step "Ghostty config installed"
 else
-    progress "  • Ghostty config file not found in repo root (expected: ./config) — skipping"
+    warn "Ghostty config missing"
 fi
 
-# OhMyPosh theme (repo root file named: shellforge.omp.json)
 if [[ -f "$REPO_DIR/shellforge.omp.json" ]]; then
     cp -f "$REPO_DIR/shellforge.omp.json" "$OHMY_POSH_DIR/shellforge.omp.json"
-    progress "  • OhMyPosh theme installed → $OHMY_POSH_DIR/shellforge.omp.json"
+    step "OhMyPosh theme installed"
 else
-    progress "  • OhMyPosh theme not found in repo root (expected: ./shellforge.omp.json) — skipping"
+    warn "OhMyPosh theme missing"
 fi
 
-# .zshrc (repo root file named: .zshrc)
+############################################
+# ZSHRC
+############################################
+
+next_step "Installing .zshrc"
+
 if [[ -f "$REPO_DIR/.zshrc" ]]; then
-    progress "  • Installing .zshrc"
+    
     if [[ -f "$HOME/.zshrc" ]]; then
+        
         if [[ "$CLEAN" == "true" ]]; then
-            rm -f "$HOME/.zshrc"
-            progress "    - Removed existing ~/.zshrc (--clean)"
+            rm "$HOME/.zshrc"
+            step "Removed old .zshrc (--clean)"
         else
-            mv -f "$HOME/.zshrc" "$HOME/.zshrc_old"
-            progress "    - Backed up existing ~/.zshrc → ~/.zshrc_old"
+            mv "$HOME/.zshrc" "$HOME/.zshrc_old"
+            step "Backed up old .zshrc"
         fi
+        
     fi
-    cp -f "$REPO_DIR/.zshrc" "$HOME/.zshrc"
-    progress "    - Copied repo .zshrc → ~/.zshrc"
+    
+    cp "$REPO_DIR/.zshrc" "$HOME/.zshrc"
+    
+    step ".zshrc installed"
+    
 else
-    progress "  • No .zshrc found in repo root — skipping"
-fi
-
-# Ensure GHOSTTY_CONFIG_HOME is defined so Ghostty uses ~/.config/ghostty
-if ! grep -q "export GHOSTTY_CONFIG_HOME" "$HOME/.zshrc"; then
-    {
-        echo ""
-        echo "# Set Ghostty config dir to ~/.config/ghostty"
-        echo "export GHOSTTY_CONFIG_HOME=\"\$HOME/.config/ghostty\""
-    } >> "$HOME/.zshrc"
-    progress "  • Added GHOSTTY_CONFIG_HOME to ~/.zshrc"
-else
-    progress "  • GHOSTTY_CONFIG_HOME already defined in ~/.zshrc — skipping"
+    warn ".zshrc missing"
 fi
 
 ############################################
-# LAZYVIM STARTER (clone if missing)
+# Neovim Setup
 ############################################
-progress "[40%] Ensuring LazyVim starter exists…"
+
+next_step "Neovim Setup"
+
 if [[ ! -d "$NVIM_DIR" ]]; then
-    progress "  • Cloning LazyVim starter to $NVIM_DIR …"
-    git clone https://github.com/LazyVim/starter "$NVIM_DIR" >/dev/null 2>&1
+    
+    run_with_spinner \
+    "Cloning LazyVim starter" \
+    git clone https://github.com/LazyVim/starter "$NVIM_DIR"
+    
     rm -rf "$NVIM_DIR/.git"
-    progress "  • LazyVim starter installed"
+    
+    step "LazyVim starter installed"
+    
 else
-    progress "  • $NVIM_DIR already exists — leaving as-is"
+    step "Neovim config already exists"
 fi
 
 ############################################
-# INSTALL CUSTOM init.lua (override)
+# init.lua
 ############################################
 
 CUSTOM_INIT_SRC="$REPO_DIR/nvim_configs/init.lua"
 CUSTOM_INIT_DST="$NVIM_DIR/init.lua"
 
 if [[ -f "$CUSTOM_INIT_SRC" ]]; then
-    progress "[50%] Installing custom init.lua…"
     
-    # Backup LazyVim's default init.lua
+    task "Installing custom init.lua"
+    
     if [[ -f "$CUSTOM_INIT_DST" ]]; then
-        cp -f "$CUSTOM_INIT_DST" "$CUSTOM_INIT_DST.lazybak"
-        progress "  • Backed up default init.lua → init.lua.lazybak"
+        cp "$CUSTOM_INIT_DST" "$CUSTOM_INIT_DST.lazybak"
+        step "Backed up existing init.lua"
     fi
     
-    # Copy custom init.lua from repo
-    cp -f "$CUSTOM_INIT_SRC" "$CUSTOM_INIT_DST"
-    progress "  • Custom init.lua installed → $CUSTOM_INIT_DST"
+    cp "$CUSTOM_INIT_SRC" "$CUSTOM_INIT_DST"
+    
+    step "Custom init.lua installed"
+    
 else
-    progress "[50%] No custom init.lua found at $CUSTOM_INIT_SRC — skipping"
+    warn "init.lua missing"
 fi
 
+############################################
+# Lua configs
+############################################
 
-############################################
-# APPLY CUSTOM NVIM LUA CONFIGS BEFORE SYNC (critical)
-############################################
-progress "[55%] Applying Neovim custom Lua configs BEFORE plugin sync…"
+next_step "Installing Lua Configs"
 
 LUA_SRC="$REPO_DIR/nvim_configs/lua_configs"
 LUA_DST="$NVIM_DIR/lua"
 
 if [[ -d "$LUA_SRC" ]]; then
+    
     ensure_dir "$LUA_DST"
     
-    # 1) Plugin specs
-    if [[ -d "$LUA_SRC/plugins" ]]; then
-        ensure_dir "$LUA_DST/plugins"
-        rsync -a "$LUA_SRC/plugins/" "$LUA_DST/plugins/"
-        progress "  • Updated plugin specs → $LUA_DST/plugins"
-    else
-        progress "  • No plugins dir found at $LUA_SRC/plugins — skipping"
-    fi
+    rsync -a "$LUA_SRC/" "$LUA_DST/"
     
-    # 2) Config dir (merge + backup any files we overwrite)
-    if [[ -d "$LUA_SRC/config" ]]; then
-        ensure_dir "$LUA_DST/config"
-        
-        # backup only the files we're about to overwrite
-        for f in "$LUA_SRC/config/"*.lua; do
-            [[ -e "$f" ]] || continue
-            base="$(basename "$f")"
-            if [[ -f "$LUA_DST/config/$base" ]]; then
-                if [[ "$CLEAN" == "true" ]]; then
-                    rm -f "$LUA_DST/config/$base"
-                    progress "    - Overwriting $base (--clean)"
-                else
-                    cp -f "$LUA_DST/config/$base" "$LUA_DST/config/${base}.backup"
-                    progress "    - Backed up $base → ${base}.backup"
-                fi
-            fi
-        done
-        
-        rsync -a "$LUA_SRC/config/" "$LUA_DST/config/"
-        progress "  • Merged config files → $LUA_DST/config (backups created where overwritten)"
-    else
-        progress "  • No config dir found at $LUA_SRC/config — skipping"
-    fi
+    step "Lua configs installed"
+    
 else
-    progress "  • No custom Lua source dir found at $LUA_SRC — skipping"
+    warn "Lua configs missing"
 fi
 
 ############################################
-# PLUGIN INSTALL / SYNC STEP
+# Lazy Sync
 ############################################
+
+next_step "Neovim Plugin Sync"
+
 if [[ "$AUTO" == "true" ]]; then
-    progress "[70%] Automated mode (-a): Running Lazy sync + lock headlessly…"
-    # Use explicit init.lua to avoid any ambiguity
+    
+    run_with_spinner \
+    "Running Lazy sync" \
     nvim --headless -u "$NVIM_DIR/init.lua" "+Lazy! sync" "+Lazy! lock" +qa
-    progress "[85%] Headless Lazy sync complete"
+    
+    step "Plugins installed"
+    
 else
-    progress "[70%] Interactive mode: Launching Neovim…"
-    progress "     • In Neovim, run :Lazy sync if it doesn’t auto-run"
-    progress "     • Quit Neovim with :qa when done"
+    warn "Interactive mode — launching Neovim"
+    echo "Run :Lazy sync inside Neovim"
     nvim
-    progress "[85%] Returned from Neovim"
 fi
 
 ############################################
-# VERIFY (lockfile check only in AUTO; skip in interactive)
+# Done
 ############################################
-if [[ "$AUTO" == "true" ]]; then
-    if [[ -f "$NVIM_DIR/lazy-lock.json" ]]; then
-        progress "[90%] Verified: lazy-lock.json exists"
-    else
-        die "LazyVim sync finished but lazy-lock.json is missing. Open nvim and run :Lazy lock"
-    fi
-else
-    progress "[90%] Interactive mode: skipping lockfile verification"
-fi
 
-############################################
-# DONE
-############################################
-progress "[100%] ShellForge setup complete!"
+section "Installation Complete"
+
+echo "🎉 ShellForge installation finished!"
 echo
-echo "🎉 ShellForge + LazyVim installation finished!"
-echo "📌 Notes:"
-echo "   • Restart terminal or run: exec zsh"
-echo "   • Open Neovim with: nvim"
-echo "   • Neo-tree: <leader>e (toggle), <leader>fe (focus), <leader>fr (reveal)"
+echo "Next steps:"
+echo "  exec zsh"
+echo "  nvim"
 echo

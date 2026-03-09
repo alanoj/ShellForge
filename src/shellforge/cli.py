@@ -1,6 +1,7 @@
 from typing import Optional
 import typer
 from shellforge import doctor, installer
+import platform, subprocess, shutil
 
 shellforge = typer.Typer(help="ShellForge Python CLI")
 

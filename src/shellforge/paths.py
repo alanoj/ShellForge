@@ -8,10 +8,10 @@ HOME = Path.home()
 ASSETS = files("shellforge.assets")
 
 # Source configuration files bundled with the package
-OMP_SOURCE = ASSETS / "shellforge.omp.json"
-GHOSTTY_SOURCE = ASSETS / "ghostty_config"
-NVIM_SOURCE = ASSETS / "nvim_configs"
-ZSHRC_SOURCE = ASSETS / ".zshrc"
+OMP_SOURCE = ASSETS / "omp" / "shellforge.omp.json"
+GHOSTTY_SOURCE = ASSETS /"ghostty" / "ghostty_config"
+NVIM_SOURCE = ASSETS / "nvim"
+ZSHRC_SOURCE = ASSETS / "shell" / ".zshrc"
 
 # Target install locations
 OMP_TARGET = HOME / ".config" / "oh-my-posh" / "themes" / "shellforge.omp.json"

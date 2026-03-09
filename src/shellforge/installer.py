@@ -37,7 +37,7 @@ def copy_tree(src: Path | Traversable, dst: Path, dry_run: bool) -> None:
 
 def install(dry_run: bool = False) -> None:
     copy_file(paths.OMP_SOURCE, paths.OMP_TARGET, dry_run=dry_run)
-    copy_tree(paths.GHOSTTY_SOURCE, paths.GHOSTTY_TARGET, dry_run=dry_run)
+    copy_file(paths.GHOSTTY_SOURCE, paths.GHOSTTY_TARGET, dry_run=dry_run)
     copy_file(paths.ZSHRC_SOURCE, paths.ZSHRC_TARGET, dry_run=dry_run)
     copy_tree(paths.NVIM_SOURCE, paths.NVIM_TARGET, dry_run=dry_run)
 

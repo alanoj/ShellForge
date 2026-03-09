@@ -1,9 +1,8 @@
 from pathlib import Path
 import shutil
-
 from rich.console import Console
-
 from shellforge import paths
+from importlib.abc import Traversable
 
 console = Console()
 
@@ -15,7 +14,8 @@ def ensure_parent(path: Path, dry_run: bool) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
 
 
-def copy_file(src: Path, dst: Path, dry_run: bool) -> None:
+def copy_file(src: Path | Traversable, dst: Path, dry_run: bool) -> None:
+    src = Path(str(src))
     ensure_parent(dst, dry_run=dry_run)
     if dry_run:
         console.print(f"[yellow]DRY RUN:[/yellow] copy {src} -> {dst}")
@@ -24,7 +24,8 @@ def copy_file(src: Path, dst: Path, dry_run: bool) -> None:
     console.print(f"[green]Copied[/green] {src.name} -> {dst}")
 
 
-def copy_tree(src: Path, dst: Path, dry_run: bool) -> None:
+def copy_tree(src: Path | Traversable, dst: Path, dry_run: bool) -> None:
+    src = Path(str(src))
     if dry_run:
         console.print(f"[yellow]DRY RUN:[/yellow] copytree {src} -> {dst}")
         return
@@ -36,7 +37,7 @@ def copy_tree(src: Path, dst: Path, dry_run: bool) -> None:
 
 def install(dry_run: bool = False) -> None:
     copy_file(paths.OMP_SOURCE, paths.OMP_TARGET, dry_run=dry_run)
-    copy_file(paths.GHOSTTY_SOURCE, paths.GHOSTTY_TARGET, dry_run=dry_run)
+    copy_tree(paths.GHOSTTY_SOURCE, paths.GHOSTTY_TARGET, dry_run=dry_run)
     copy_file(paths.ZSHRC_SOURCE, paths.ZSHRC_TARGET, dry_run=dry_run)
     copy_tree(paths.NVIM_SOURCE, paths.NVIM_TARGET, dry_run=dry_run)
 

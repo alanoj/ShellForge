@@ -16,3 +16,6 @@ shellforge = "shellforge.cli:main"
 [build-system]
 requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.package-data]
+shellforge = ["assets/**/*"]

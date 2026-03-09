@@ -1,7 +1,5 @@
 from dataclasses import dataclass
-from os import name
 import shutil
-from unittest import result
 from rich.console import Console
 from rich.table import Table
 

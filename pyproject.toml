@@ -1,0 +1,18 @@
+[project]
+name = "shellforge"
+version = "0.1.0"
+description = "Portable terminal bootstrap CLI"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "Alan Ordorica" }]
+dependencies = ["typer>=0.12", "rich>=13.0"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.3", "mypy>=1.8", "build>=1.2"]
+
+[project.scripts]
+shellforge = "shellforge.cli:main"
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"

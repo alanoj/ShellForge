@@ -11,6 +11,7 @@ ehthumbs.db
 *.temp
 temp/
 logs/
+cli_guide/
 
 # Compiled/Build Artifacts (place project-specific build folders here)
 /build
@@ -23,3 +24,40 @@ logs/
 
 # Sensitive files/environment variables
 .env
+
+# ----------------------------
+# Python / Packaging Artifacts
+# ----------------------------
+__pycache__/
+*.py[cod]
+*.so
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Python build / packaging
+*.egg-info/
+.eggs/
+build/
+dist/
+*.egg
+pip-wheel-metadata/
+
+# Test / coverage outputs
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+
+# Type checker / linter caches
+.mypy_cache/
+.ruff_cache/
+
+# Python logs
+*.log
+
+# macOS Python framework artifacts
+.python-version

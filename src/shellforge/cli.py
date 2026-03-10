@@ -1,6 +1,7 @@
 from typing import Optional
 import typer
 from shellforge import doctor, installer
+from shellforge.bootstrap import bootstrap as bootstrap_cmd
 import platform, subprocess, shutil
 
 shellforge = typer.Typer(help="ShellForge Python CLI")
@@ -22,7 +23,7 @@ def bootstrap(
     dry_run: bool = typer.Option(False, "--dry-run", help="Run without making changes"),
     compact: bool = typer.Option(False, "--compact", help="Hide install logs"),
 ):
-    installer.bootstrap(dry_run=dry_run, compact=compact)
+    bootstrap_cmd(dry_run=dry_run, compact=compact)
 
 
 @shellforge.command()

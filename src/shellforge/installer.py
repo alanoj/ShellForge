@@ -7,6 +7,7 @@ from rich.console import Console
 from rich.progress import Progress, BarColumn, SpinnerColumn, TextColumn, TaskProgressColumn
 from shellforge import paths
 from importlib.abc import Traversable
+from importlib.resources import files
 
 console = Console()
 
@@ -89,25 +90,19 @@ def run_command(cmd: list[str], dry_run: bool) -> None:
     
 
 def show_logo() -> None:
-    logo = Path.home() / ".config/shellforge/logo.png"
-
-    # clear terminal for a clean intro screen
     console.clear()
 
-    # Detect supported terminals
-    supported_terminal = (
-        os.environ.get("TERM_PROGRAM") in ["ghostty", "WezTerm"]
-        or os.environ.get("KITTY_WINDOW_ID")
-    )
+    logo = files("shellforge.assets").joinpath("logo.png")
+    logo_path = Path(str(logo))
 
-    if supported_terminal and logo.exists() and shutil.which("kitten"):
+    if logo_path.exists():
         subprocess.run(
             [
                 "kitten",
                 "icat",
                 "--align=center",
                 "--scale-up",
-                str(logo),
+                str(logo_path),
             ],
             check=False,
         )

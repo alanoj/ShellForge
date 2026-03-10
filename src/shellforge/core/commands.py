@@ -25,6 +25,8 @@ def run_command(
         universal_newlines=True
     )
 
+    dependency_count = 0
+
     if process.stdout:
 
         for line in iter(process.stdout.readline, ""):
@@ -36,13 +38,21 @@ def run_command(
             if verbose and log_callback:
                 log_callback(line)
 
-            if line.startswith("==> Installing dependency"):
-                progress.advance(task_id)
+            # Detect dependency list from brew and expand total steps
+            if "Installing dependencies for" in line:
+                deps = line.split(":")[-1]
+                dependency_count = len([d.strip() for d in deps.split(",") if d.strip()])
 
-            elif line.startswith("==> Installing"):
-                progress.advance(task_id)
+                try:
+                    task = progress.tasks[task_id]
+                    progress.update(task_id, total=task.total + dependency_count)
+                except Exception:
+                    pass
 
-            elif line.startswith("🍺"):
+                continue
+
+            # Advance progress only when a package finishes installing
+            if line.startswith("🍺"):
                 progress.advance(task_id)
 
     process.wait()

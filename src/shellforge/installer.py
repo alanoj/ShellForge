@@ -5,7 +5,6 @@ import shutil
 import subprocess
 from rich.console import Console
 from rich.progress import Progress, BarColumn, SpinnerColumn, TextColumn, TaskProgressColumn
-from asyncio import tools
 from shellforge import paths
 from importlib.abc import Traversable
 

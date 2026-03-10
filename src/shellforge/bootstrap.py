@@ -83,6 +83,8 @@ def bootstrap(dry_run=False, compact=False):
     )
 
     with Live(layout, console=console, refresh_per_second=10) as live:
+        # Force an initial render so Rich tracks the layout correctly
+        live.update(layout)
 
         for description, action in steps:
             progress.update(task, description=f"[bold #90DBE5]{description}[/bold #90DBE5]")
@@ -93,9 +95,11 @@ def bootstrap(dry_run=False, compact=False):
                 log_panel.log(f"[cyan]➜ Running[/cyan]: {' '.join(action)}")
                 run_command(
                     progress,
+                    task,
                     action,
                     dry_run,
-                    verbose=not compact
+                    verbose=not compact,
+                    log_callback=log_panel.log
                 )
 
             elif isinstance(action, tuple):

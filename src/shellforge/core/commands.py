@@ -2,11 +2,13 @@ import subprocess
 from rich.progress import Progress
 
 
-def run_command(progress: Progress, cmd: list[str], dry_run: bool, verbose: bool = False):
+def run_command(progress: Progress, task_id, cmd: list[str], dry_run: bool, verbose: bool = False, log_callback=None):
 
     if dry_run:
+        if log_callback:
+            log_callback(f"[yellow]DRY RUN[/yellow]: {' '.join(cmd)}")
         progress.update(
-            progress.tasks[0].id,
+            task_id,
             description=f"DRY RUN: {' '.join(cmd)}"
         )
         return
@@ -17,20 +19,28 @@ def run_command(progress: Progress, cmd: list[str], dry_run: bool, verbose: bool
         stderr=subprocess.STDOUT,
         text=True,
         bufsize=1,
+        universal_newlines=True
     )
 
     if process.stdout:
-        for line in process.stdout:
+        # Stream output line-by-line to avoid UI freezing during long installs
+        for line in iter(process.stdout.readline, ""):
             line = line.rstrip()
 
-            if verbose:
-                print(line)
+            if not line:
                 continue
 
+            if verbose:
+                if log_callback:
+                    log_callback(line)
+                continue
+
+            # Update progress description for important installer events
             if line.startswith("==>") or line.startswith("🍺"):
-                progress.update(
-                    progress.tasks[0].id,
-                    description=line
-                )
+                progress.update(task_id, description=line)
+
+            # Send other output to the log panel
+            elif log_callback:
+                log_callback(line)
 
     process.wait()

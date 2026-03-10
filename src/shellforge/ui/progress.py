@@ -17,8 +17,8 @@ def create_progress_bar(total_steps: int):
         SpinnerColumn(style="#90DBE5"),
         BarColumn(
             bar_width=120,
-            complete_style="#90DBE5",
-            finished_style="#DD4874",
+            complete_style="#DD4874",
+            finished_style="green_yellow",
             pulse_style="#90DBE5",
         ),
         TaskProgressColumn(),

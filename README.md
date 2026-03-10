@@ -1,30 +1,68 @@
-# ⚔️🔥 ShellForge
+# ShellForge
 
-**ShellForge** is my fantasy-forged terminal arsenal — a fully versioned, portable CLI environment designed to recreate my complete development loadout on any machine.
+![ShellForge Banner](docs/assets/shellforge-banner.png)
 
-Forged in Zsh. Tempered in Lua. Enchanted with Git glyphs.
+**ShellForge** is a reproducible terminal environment bootstrap tool designed to recreate a complete development CLI environment on any machine.
 
-This repository contains everything needed to summon my battle-ready shell: prompt theme, plugins, Neovim configuration, package manifest, and bootstrap scripts.
+It installs system tools, deploys shell configuration, and sets up editor environments using a single command — making developer environments portable and reproducible.
 
----
+ShellForge demonstrates DevOps‑style environment automation through:
 
-## 🏰 What is ShellForge?
-
-ShellForge is a reproducible terminal setup that allows me to:
-
-- 🛡️ Deploy my exact CLI environment on any machine
-- ⚔️ Maintain a custom Oh My Posh prompt
-- 🔮 Manage a Lua-powered Neovim configuration
-- 📦 Version control all installed packages
-- 🚀 Bootstrap a fresh system in minutes
-
-It is both configuration and infrastructure — a portable developer forge.
+- CLI tooling
+- environment bootstrapping
+- configuration management
+- reproducible development environments
 
 ---
 
-## 🧱 Architecture Overview
+# 🚀 Demo
 
-Below is the high-level structure of the ShellForge environment:
+## Install Demo
+
+![ShellForge Install Demo](docs/assets/install-demo.gif)
+
+Video version:
+
+```
+docs/assets/install-demo.mp4
+```
+
+
+The installer provides a live terminal UI with:
+
+- animated progress bar
+- live streaming logs
+- dependency detection
+- configuration deployment
+
+## Post‑Install Terminal Prompt
+
+After the bootstrap completes, the configured shell prompt and environment are ready to use.
+
+![ShellForge Prompt](docs/assets/prompt-demo.png)
+
+This screenshot should show the final Oh‑My‑Posh prompt with Git status indicators and the configured terminal environment.
+
+---
+
+# 🏰 What is ShellForge?
+
+ShellForge allows developers to instantly recreate their development environment on any machine.
+
+With one command you can install tools, deploy configs, and configure your shell exactly the same every time.
+
+Typical use cases:
+
+- onboarding new machines
+- portable developer environments
+- reproducible workstation setup
+- CLI environment management
+
+---
+
+# 🧱 Architecture Overview
+
+Below is the high‑level structure of the ShellForge environment.
 
 ```
                     ┌─────────────────────┐
@@ -52,16 +90,17 @@ Below is the high-level structure of the ShellForge environment:
 
 ---
 
-## 🛠 Components of the Forge
+# 🛠 Components of the Forge
 
-### ⚔️ Prompt (Oh My Posh)
+## ⚔️ Prompt (Oh My Posh)
 
-- Custom ShellForge theme
+Custom prompt providing:
+
 - Git branch tracking
 - Ahead / behind indicators
-- Stash, staged, working indicators
-- Detached HEAD warning glyph
-- Execution status + timing
+- Stash detection
+- Execution timing
+- Exit status indicators
 
 Location:
 
@@ -71,13 +110,14 @@ shellforge.omp.json
 
 ---
 
-### 🧙 Shell Layer (Zsh)
+## 🧙 Shell Layer (Zsh)
 
-- Aliases
-- Environment variables
-- Plugin sourcing
+Provides core shell configuration including:
+
+- aliases
+- environment variables
+- plugin sourcing
 - PATH management
-- Shell enhancements
 
 Files:
 
@@ -88,9 +128,9 @@ shell/aliases.zsh
 
 ---
 
-### 🔮 Neovim (Lua-Based Configuration)
+## 🔮 Neovim Configuration
 
-Modern Lua-driven configuration:
+Modern Lua‑based Neovim configuration.
 
 ```
 nvim/
@@ -104,67 +144,68 @@ nvim/
 
 Includes:
 
-- Plugin manager (lazy.nvim / packer)
+- plugin manager
 - LSP configuration
-- Autocomplete
-- Syntax highlighting
-- Telescope
-- Git integration
+- syntax highlighting
+- fuzzy finding
+- git integration
 
 ---
 
-### 🧰 Plugins & Tooling
+## 🧰 System Tooling
 
-- fzf
-- zsh-autosuggestions
-- zsh-syntax-highlighting
-- Nerd Fonts
-- Git enhancements
-
-All system-level dependencies are tracked via:
+Installed through Homebrew and tracked via:
 
 ```
 Brewfile
 ```
 
+Typical tools:
+
+- neovim
+- fzf
+- ripgrep
+- git
+- oh‑my‑posh
+
 ---
 
-## 📦 Installation — Summon the Forge
+# 📦 Installation
 
-### 1️⃣ Clone the Repository
+## 1. Clone Repository
 
 ```bash
 git clone https://github.com/alanoj/ShellForge.git
 cd ShellForge
 ```
 
-### 2️⃣ Install Packages
+## 2. Install Packages
 
 ```bash
 brew bundle install
 ```
 
-### 3️⃣ Deploy Prompt Theme
+## 3. Deploy Prompt Theme
 
 ```bash
 mkdir -p ~/.config/oh-my-posh/themes
 cp shellforge.omp.json ~/.config/oh-my-posh/themes/
 ```
 
-Add to `.zshrc`:
+Add to `.zshrc`
 
 ```bash
 eval "$(oh-my-posh init zsh --config ~/.config/oh-my-posh/themes/shellforge.omp.json)"
 ```
 
-### 4️⃣ Install Neovim Config
+## 4. Install Neovim Config
 
 ```bash
 mkdir -p ~/.config/nvim
 cp -R nvim/* ~/.config/nvim/
 ```
 
-### 5️⃣ Reload Shell
+## 5. Reload Shell
 
 ```bash
 exec zsh
@@ -172,57 +213,26 @@ exec zsh
 
 ---
 
-## ⚙️ Planned Bootstrap Script
+# 🧪 Continuous Integration
 
-Eventually, setup will be reduced to:
+ShellForge uses GitHub Actions to validate builds and CLI functionality.
 
-```bash
-./bootstrap_shellforge.sh
+CI performs:
+
+- dependency installation
+- lint checks
+- static type checks
+- CLI smoke tests
+
+Workflow location:
+
+```
+.github/workflows/ci.yml
 ```
 
-Which will:
-
-- Install Homebrew (if missing)
-- Install all Brewfile dependencies
-- Deploy configs
-- Configure fonts
-- Finalize shell
-
 ---
 
-## 🎮 Git Status Enchantments
-
-| State     | Display |
-|-----------|----------|
-| Branch    | main     |
-| Ahead     | ⇡1       |
-| Behind    | ⇣1       |
-| Staged    | 1       |
-| Working   | 2       |
-| Stash     | 1       |
-| Detached  | Warning glyph |
-
----
-
-## 🧠 Philosophy
-
-ShellForge is:
-
-- 🛡️ Portable
-- 🔥 Version controlled
-- ⚔️ Battle-tested
-- 🧰 Reproducible
-- 🧙 Customizable
-
-No mystery setup.  
-No forgotten dependencies.  
-No machine drift.
-
-Just forge → deploy → code.
-
----
-
-## 📁 Repository Structure
+# 📁 Repository Structure
 
 ```
 ShellForge/
@@ -232,26 +242,43 @@ ShellForge/
 ├── shell/
 ├── nvim/
 ├── scripts/
-└── docs/
+├── docs/
+│   └── assets/
+└── .github/
+    └── workflows/
 ```
 
----
+Media files used in this README should be placed in:
 
-## 📜 License
-
-MIT License — modify, fork, improve.
-
-Forge your own loadout.
+```
+docs/assets/
 ```
 
+Example assets:
+
+- `shellforge-banner.png`
+- `install-demo.gif`
+- `progress-ui.png`
+- `architecture-diagram.png`
+- `prompt-after-install.png`
+
 ---
 
-✅ This is **one single Markdown code block** — all of the content inside it is part of a single block from start to finish.
+# 🧠 Philosophy
 
-No embedded block IDs, no slices, no additional metadata — everything you saw before has been removed.
+ShellForge follows DevOps‑style development principles.
 
-If you paste that directly into `README.md`, it will format correctly on GitHub.
+- Portable environments
+- Version‑controlled configuration
+- Reproducible system setup
+- Automated developer onboarding
+
+Instead of manually configuring machines, environments are defined as code.
 
 ---
 
-If you want a **matching ASCII forge banner** at the top or automatic badges (stars/license/build), tell me and I’ll generate one next! 🛡️🔥
+# 📜 License
+
+MIT License
+
+Forge your own developer loadout.

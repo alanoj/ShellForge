@@ -92,10 +92,9 @@ def bootstrap(dry_run: bool = False, compact: bool = False) -> None:
 
     console.print("[bold #90DBE5]Starting ShellForge bootstrap...[/bold #90DBE5]\n")
 
-    # Unified step list for entire installer
+    # ---------- ALL INSTALL STEPS ----------
     steps = []
 
-    # --- system tools ---
     tools = {
         "nvim": "neovim",
         "oh-my-posh": "oh-my-posh",
@@ -108,7 +107,6 @@ def bootstrap(dry_run: bool = False, compact: bool = False) -> None:
         else:
             steps.append((f"Installing {package}", ["brew", "install", package]))
 
-    # --- configuration installs ---
     steps.extend([
         ("Installing Oh-My-Posh theme", ("copy_file", paths.OMP_SOURCE, paths.OMP_TARGET)),
         ("Installing Ghostty config", ("copy_file", paths.GHOSTTY_SOURCE, paths.GHOSTTY_TARGET)),
@@ -116,20 +114,29 @@ def bootstrap(dry_run: bool = False, compact: bool = False) -> None:
         ("Installing Neovim configuration", ("copy_tree", paths.NVIM_SOURCE, paths.NVIM_TARGET)),
     ])
 
+    # ---------- PROGRESS UI ----------
+    current_task = ""
+
     with Progress(
-        SpinnerColumn(),
-        TextColumn("[bold #90DBE5]{task.description}"),
-        BarColumn(bar_width=80),
+        SpinnerColumn(style="cyan"),
+        BarColumn(
+            bar_width=None,
+            complete_style="#90DBE5",
+            finished_style="#90DBE5",
+            pulse_style="#90DBE5",
+        ),
         TaskProgressColumn(),
         console=console,
         expand=True,
     ) as progress:
 
-        task = progress.add_task("Bootstrapping ShellForge...", total=len(steps))
+        task = progress.add_task("", total=len(steps))
 
         for description, action in steps:
 
-            progress.update(task, description=description)
+            if description != current_task:
+                progress.update(task, description=description)
+                current_task = description
 
             if action is None:
                 pass
@@ -153,13 +160,13 @@ def tool_exists(name:str) -> bool:
 
 def run_command(cmd: list[str], dry_run: bool) -> None:
     if dry_run:
-        console.print(f"[yellow]DRY RUN:[/yellow] {' '.join(cmd)}")
         return
-    
-    # Automatically use sudo for apt installs if available
-    if cmd[0] == "apt" and shutil.which("sudo"):
-        cmd = ["sudo"] + cmd
-    subprocess.run(cmd, check=True)
+
+    subprocess.run(
+        cmd,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
     
 
 def show_logo() -> None:

@@ -36,7 +36,13 @@ def run_command(
             if verbose and log_callback:
                 log_callback(line)
 
-            if line.startswith("==> Installing"):
+            if line.startswith("==> Installing dependency"):
+                progress.advance(task_id)
+
+            elif line.startswith("==> Installing"):
+                progress.advance(task_id)
+
+            elif line.startswith("🍺"):
                 progress.advance(task_id)
 
     process.wait()

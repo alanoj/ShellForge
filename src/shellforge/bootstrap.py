@@ -132,6 +132,9 @@ def bootstrap(dry_run=False, compact=False):
                         log_panel.log(f"[cyan]Copying directory[/cyan] {src} → {dst}")
                         copy_tree(src, dst, dry_run)
 
-            progress.advance(task)
+            # Advance progress only for non-command steps.
+            # Command installs (brew etc.) advance inside run_command() based on output.
+            if not isinstance(action, list):
+                progress.advance(task)
 
     console.print("\n[bold green]Bootstrap complete.[/bold green]")

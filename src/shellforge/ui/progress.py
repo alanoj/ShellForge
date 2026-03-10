@@ -32,6 +32,7 @@ def create_progress_bar(total_steps: int):
         border_style="#90DBE5",
         padding=(2, 4),
         title="[bold #90DBE5]ShellForge Progress[/bold #90DBE5]",
+        title_align="left",
         expand=True
     )
 

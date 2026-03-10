@@ -24,7 +24,7 @@ def run_command(progress: Progress, cmd: list[str], dry_run: bool, verbose: bool
             line = line.rstrip()
 
             if verbose:
-                progress.console.print(line)
+                print(line)
                 continue
 
             if line.startswith("==>") or line.startswith("🍺"):

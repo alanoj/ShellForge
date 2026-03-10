@@ -26,11 +26,10 @@ class LogPanel:
         if len(self.lines) > self.max_lines:
             self.lines.pop(0)
 
-    def render(self):
+    def __rich__(self):
         table = Table.grid()
         for line in self.lines:
             table.add_row(line)
-
         return Panel(
             table,
             title="Logs",
@@ -80,24 +79,18 @@ def bootstrap(dry_run=False, compact=False):
 
     layout = Group(
         Align.center(progress_panel, vertical="middle"),
-        log_panel.render()
+        log_panel
     )
 
     with Live(layout, console=console, refresh_per_second=10) as live:
 
         for description, action in steps:
-
             progress.update(task, description=f"[bold #90DBE5]{description}[/bold #90DBE5]")
-
             if action is None:
                 log_panel.log(f"[green]✓ {description}[/green]")
-                live.update(Group(Align.center(progress_panel), log_panel.render()))
-
             elif isinstance(action, list):
 
                 log_panel.log(f"[cyan]➜ Running[/cyan]: {' '.join(action)}")
-                live.update(Group(Align.center(progress_panel), log_panel.render()))
-
                 run_command(
                     progress,
                     action,
@@ -112,21 +105,17 @@ def bootstrap(dry_run=False, compact=False):
                 if kind == "copy_file":
 
                     if dry_run:
-                        log_panel.log(f"[yellow]DRY RUN[/yellow]: copy {src} → {dst}")
-                        live.update(Group(Align.center(progress_panel), log_panel.render()))
+                        log_panel.log(f"[yellow]DRY RUN[/yellow]: copy {src} → {dst}")                        
                     else:
                         log_panel.log(f"[cyan]Copying[/cyan] {src} → {dst}")
-                        live.update(Group(Align.center(progress_panel), log_panel.render()))
                         copy_file(progress, task, src, dst, dry_run)
 
                 elif kind == "copy_tree":
 
                     if dry_run:
                         log_panel.log(f"[yellow]DRY RUN[/yellow]: copytree {src} → {dst}")
-                        live.update(Group(Align.center(progress_panel), log_panel.render()))
                     else:
                         log_panel.log(f"[cyan]Copying directory[/cyan] {src} → {dst}")
-                        live.update(Group(Align.center(progress_panel), log_panel.render()))
                         copy_tree(progress, task, src, dst, dry_run)
 
             progress.advance(task)

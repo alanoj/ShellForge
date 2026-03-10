@@ -66,8 +66,29 @@ def install(dry_run: bool = False) -> None:
             progress.advance(task)
 
 
+def splash_intro() -> None:
+    steps = [
+        "Initializing environment",
+        "Checking dependencies",
+        "Preparing installer",
+    ]
+
+    with Progress(
+        SpinnerColumn(style="cyan"),
+        TextColumn("[bold #90DBE5]{task.description}"),
+        console=console,
+        transient=True,
+    ) as progress:
+
+        for step in steps:
+            task = progress.add_task(step, total=None)
+            import time
+            time.sleep(0.6)
+            progress.remove_task(task)
+
 def bootstrap(dry_run: bool = False) -> None:
     show_logo()
+    splash_intro()
     console.print("[bold cyan]Starting ShellForge bootstrap...[/bold cyan]")
     with console.status("[bold cyan]Installing system tools..."):
         install_system_tools(dry_run)

@@ -6,6 +6,8 @@ import subprocess
 import textwrap
 from rich.console import Console
 from rich.progress import Progress, BarColumn, SpinnerColumn, TextColumn, TaskProgressColumn, TimeElapsedColumn
+from rich.live import Live
+from rich.console import Group
 from shellforge import paths
 from importlib.abc import Traversable
 from importlib.resources import files
@@ -24,21 +26,21 @@ def copy_file(progress: Progress, src: Path | Traversable, dst: Path, dry_run: b
     src = Path(str(src))
     ensure_parent(dst, dry_run=dry_run)
     if dry_run:
-        progress.console.print(f"[yellow]DRY RUN:[/yellow] copy {src} -> {dst}")
+        console.print(f"[yellow]DRY RUN:[/yellow] copy {src} -> {dst}")
         return
     shutil.copy2(src, dst)
-    progress.console.print(f"[green]Copied[/green] {src.name} -> {dst}")
+    console.print(f"[green]Copied[/green] {src.name} -> {dst}")
 
 
 def copy_tree(progress: Progress, src: Path | Traversable, dst: Path, dry_run: bool) -> None:
     src = Path(str(src))
     if dry_run:
-        progress.console.print(f"[yellow]DRY RUN:[/yellow] copytree {src} -> {dst}")
+        console.print(f"[yellow]DRY RUN:[/yellow] copytree {src} -> {dst}")
         return
     if dst.exists():
         shutil.rmtree(dst)
     shutil.copytree(src, dst)
-    progress.console.print(f"[green]Copied[/green] {src} -> {dst}")
+    console.print(f"[green]Copied[/green] {src} -> {dst}")
 
 
 def install(dry_run: bool = False, compact: bool = False) -> None:
@@ -50,20 +52,21 @@ def install(dry_run: bool = False, compact: bool = False) -> None:
         ("Installing Neovim configuration", copy_tree, paths.NVIM_SOURCE, paths.NVIM_TARGET),
     ]
 
-    with Progress(
+    progress = Progress(
         SpinnerColumn(style="cyan"),
-        TextColumn("[bold #90DBE5]{task.description}", justify="center"),
         BarColumn(
-            bar_width=120,              # MUCH wider
+            bar_width=None,
             complete_style="#90DBE5",
             finished_style="#90DBE5",
             pulse_style="#90DBE5",
         ),
         TaskProgressColumn(),
-        TimeElapsedColumn(),
-        console=console,
-        expand=True
-    ) as progress:
+        expand=True,
+    )
+
+    task = progress.add_task("", total=len(steps))
+
+    with Live(progress, console=console, refresh_per_second=10):
 
         task = progress.add_task("Installing configs...", total=len(steps))
 
@@ -95,6 +98,7 @@ def splash_intro() -> None:
 
 def bootstrap(dry_run: bool = False, compact: bool = False) -> None:
     show_logo()
+    console.rule(style="#90DBE5")
     splash_intro()
 
     console.print("[bold #90DBE5]Starting ShellForge bootstrap...[/bold #90DBE5]\n")
@@ -167,7 +171,7 @@ def tool_exists(name:str) -> bool:
 
 def run_command(progress: Progress, cmd: list[str], dry_run: bool, compact: bool = False) -> None:
     if dry_run:
-        progress.console.print(f"[yellow]DRY RUN:[/yellow] {' '.join(cmd)}")
+        console.print(f"[yellow]DRY RUN:[/yellow] {' '.join(cmd)}")
         return
 
     process = subprocess.Popen(
@@ -180,7 +184,7 @@ def run_command(progress: Progress, cmd: list[str], dry_run: bool, compact: bool
     if process.stdout:
         for line in process.stdout:
             if not compact:
-                progress.console.print(line.rstrip())
+                console.print(line.rstrip())
 
     process.wait()
 

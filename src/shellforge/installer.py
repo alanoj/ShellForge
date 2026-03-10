@@ -1,4 +1,4 @@
-from os import system
+import os
 from pathlib import Path
 import platform
 import shutil
@@ -67,6 +67,7 @@ def install(dry_run: bool = False) -> None:
 
 
 def bootstrap(dry_run: bool = False) -> None:
+    show_logo()
     console.print("[bold cyan]Starting ShellForge bootstrap...[/bold cyan]")
     with console.status("[bold cyan]Installing system tools..."):
         install_system_tools(dry_run)
@@ -87,6 +88,34 @@ def run_command(cmd: list[str], dry_run: bool) -> None:
         cmd = ["sudo"] + cmd
     subprocess.run(cmd, check=True)
     
+
+def show_logo() -> None:
+    logo = Path.home() / ".config/shellforge/logo.png"
+
+    # clear terminal for a clean intro screen
+    console.clear()
+
+    # Detect supported terminals
+    supported_terminal = (
+        os.environ.get("TERM_PROGRAM") in ["ghostty", "WezTerm"]
+        or os.environ.get("KITTY_WINDOW_ID")
+    )
+
+    if supported_terminal and logo.exists() and shutil.which("kitten"):
+        subprocess.run(
+            [
+                "kitten",
+                "icat",
+                "--align=center",
+                "--scale-up",
+                str(logo),
+            ],
+            check=False,
+        )
+
+    console.print(
+        "\n[bold cyan]⚙ ShellForge — Terminal Environment Bootstrap[/bold cyan]\n"
+    )
 
 def install_system_tools(dry_run: bool) -> None:
     system = platform.system()

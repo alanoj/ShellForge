@@ -26,21 +26,21 @@ def copy_file(progress: Progress, src: Path | Traversable, dst: Path, dry_run: b
     src = Path(str(src))
     ensure_parent(dst, dry_run=dry_run)
     if dry_run:
-        console.print(f"[yellow]DRY RUN:[/yellow] copy {src} -> {dst}")
+        progress.console.print(f"[yellow]DRY RUN:[/yellow] copy {src} -> {dst}")
         return
     shutil.copy2(src, dst)
-    console.print(f"[green]Copied[/green] {src.name} -> {dst}")
+    progress.console.print(f"[green]Copied[/green] {src.name} -> {dst}")
 
 
 def copy_tree(progress: Progress, src: Path | Traversable, dst: Path, dry_run: bool) -> None:
     src = Path(str(src))
     if dry_run:
-        console.print(f"[yellow]DRY RUN:[/yellow] copytree {src} -> {dst}")
+        progress.console.print(f"[yellow]DRY RUN:[/yellow] copytree {src} -> {dst}")
         return
     if dst.exists():
         shutil.rmtree(dst)
     shutil.copytree(src, dst)
-    console.print(f"[green]Copied[/green] {src} -> {dst}")
+    progress.console.print(f"[green]Copied[/green] {src} -> {dst}")
 
 
 def install(dry_run: bool = False, compact: bool = False) -> None:
@@ -171,7 +171,7 @@ def tool_exists(name:str) -> bool:
 
 def run_command(progress: Progress, cmd: list[str], dry_run: bool, compact: bool = False) -> None:
     if dry_run:
-        console.print(f"[yellow]DRY RUN:[/yellow] {' '.join(cmd)}")
+        progress.console.print(f"[yellow]DRY RUN:[/yellow] {' '.join(cmd)}")
         return
 
     process = subprocess.Popen(

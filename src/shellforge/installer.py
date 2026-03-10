@@ -41,7 +41,7 @@ def copy_tree(src: Path | Traversable, dst: Path, dry_run: bool) -> None:
     console.print(f"[green]Copied[/green] {src} -> {dst}")
 
 
-def install(dry_run: bool = False) -> None:
+def install(dry_run: bool = False, compact: bool = False) -> None:
 
     steps = [
         ("Installing Oh-My-Posh theme", copy_file, paths.OMP_SOURCE, paths.OMP_TARGET),
@@ -52,8 +52,7 @@ def install(dry_run: bool = False) -> None:
 
     with Progress(
         SpinnerColumn(),
-        TextColumn("[bold cyan]{task.description}"),
-        TextColumn("[bold]{task.completed}/{task.total}"),
+        TextColumn("[bold #90DBE5]{task.description}"),
         BarColumn(bar_width=60),
         TaskProgressColumn(),
         console=console,
@@ -87,15 +86,67 @@ def splash_intro() -> None:
             time.sleep(0.6)
             progress.remove_task(task)
 
-def bootstrap(dry_run: bool = False) -> None:
+def bootstrap(dry_run: bool = False, compact: bool = False) -> None:
     show_logo()
     splash_intro()
-    console.print("[bold cyan]Starting ShellForge bootstrap...[/bold cyan]")
-    with console.status("[bold cyan]Installing system tools..."):
-        install_system_tools(dry_run)
-    install(dry_run=dry_run)
-    console.print("[bold green]Bootstrap complete.[/bold green]")
-    
+
+    console.print("[bold #90DBE5]Starting ShellForge bootstrap...[/bold #90DBE5]\n")
+
+    # Unified step list for entire installer
+    steps = []
+
+    # --- system tools ---
+    tools = {
+        "nvim": "neovim",
+        "oh-my-posh": "oh-my-posh",
+        "zsh": "zsh",
+    }
+
+    for binary, package in tools.items():
+        if tool_exists(binary):
+            steps.append((f"{binary} already installed", None))
+        else:
+            steps.append((f"Installing {package}", ["brew", "install", package]))
+
+    # --- configuration installs ---
+    steps.extend([
+        ("Installing Oh-My-Posh theme", ("copy_file", paths.OMP_SOURCE, paths.OMP_TARGET)),
+        ("Installing Ghostty config", ("copy_file", paths.GHOSTTY_SOURCE, paths.GHOSTTY_TARGET)),
+        ("Installing ZSH configuration", ("copy_file", paths.ZSHRC_SOURCE, paths.ZSHRC_TARGET)),
+        ("Installing Neovim configuration", ("copy_tree", paths.NVIM_SOURCE, paths.NVIM_TARGET)),
+    ])
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[bold #90DBE5]{task.description}"),
+        BarColumn(bar_width=80),
+        TaskProgressColumn(),
+        console=console,
+        expand=True,
+    ) as progress:
+
+        task = progress.add_task("Bootstrapping ShellForge...", total=len(steps))
+
+        for description, action in steps:
+
+            progress.update(task, description=description)
+
+            if action is None:
+                pass
+
+            elif isinstance(action, list):
+                run_command(action, dry_run)
+
+            elif isinstance(action, tuple):
+                kind, src, dst = action
+                if kind == "copy_file":
+                    copy_file(src, dst, dry_run)
+                elif kind == "copy_tree":
+                    copy_tree(src, dst, dry_run)
+
+            progress.advance(task)
+
+    console.print("\n[bold green]Bootstrap complete.[/bold green]")
 
 def tool_exists(name:str) -> bool:
     return shutil.which(name) is not None
@@ -161,31 +212,36 @@ def show_logo() -> None:
         justify="center",
     )
 
-def install_system_tools(dry_run: bool) -> None:
-    system = platform.system()
-    
-    if system == "Linux":
-        package_manager = "apt"
-    elif system == "Darwin":
-        package_manager = "brew"
-    else:
-        console.print(f"[red]Unsupported OS:[/red] {system}")
+def install_system_tools(dry_run: bool, compact: bool = False) -> None:
+    if not shutil.which("brew"):
+        console.print("[red]Homebrew is required but was not found on this system.[/red]")
+        console.print("[yellow]Install Homebrew first: https://brew.sh[/yellow]")
         return
+
     tools = {
         "nvim": "neovim",
         "oh-my-posh": "oh-my-posh",
         "zsh": "zsh",
     }
-    
-    for binary, package in tools.items():
-        if tool_exists(binary):
-            console.print(f"[green]{binary} already installed[/green]")
-            continue
-        
-        console.print(f"[cyan]Installing {package}...[/cyan]")
-        
-        if package_manager == "apt":
-            run_command(["apt", "update"], dry_run)
-            run_command(["apt", "install", "-y", package], dry_run)
-        elif package_manager == "brew":
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[bold #90DBE5]{task.description}"),
+        BarColumn(bar_width=80),
+        TaskProgressColumn(),
+        console=console,
+        expand=True,
+    ) as progress:
+
+        task = progress.add_task("Installing system tools...", total=len(tools))
+
+        for binary, package in tools.items():
+
+            if tool_exists(binary):
+                progress.update(task, description=f"{binary} already installed")
+                progress.advance(task)
+                continue
+
+            progress.update(task, description=f"Installing {package}")
             run_command(["brew", "install", package], dry_run)
+            progress.advance(task)

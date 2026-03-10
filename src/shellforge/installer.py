@@ -5,7 +5,7 @@ import shutil
 import subprocess
 import textwrap
 from rich.console import Console
-from rich.progress import Progress, BarColumn, SpinnerColumn, TextColumn, TaskProgressColumn
+from rich.progress import Progress, BarColumn, SpinnerColumn, TextColumn, TaskProgressColumn, TimeElapsedColumn
 from shellforge import paths
 from importlib.abc import Traversable
 from importlib.resources import files
@@ -20,25 +20,25 @@ def ensure_parent(path: Path, dry_run: bool) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
 
 
-def copy_file(src: Path | Traversable, dst: Path, dry_run: bool) -> None:
+def copy_file(progress: Progress, src: Path | Traversable, dst: Path, dry_run: bool) -> None:
     src = Path(str(src))
     ensure_parent(dst, dry_run=dry_run)
     if dry_run:
-        console.print(f"[yellow]DRY RUN:[/yellow] copy {src} -> {dst}")
+        progress.console.print(f"[yellow]DRY RUN:[/yellow] copy {src} -> {dst}")
         return
     shutil.copy2(src, dst)
-    console.print(f"[green]Copied[/green] {src.name} -> {dst}")
+    progress.console.print(f"[green]Copied[/green] {src.name} -> {dst}")
 
 
-def copy_tree(src: Path | Traversable, dst: Path, dry_run: bool) -> None:
+def copy_tree(progress: Progress, src: Path | Traversable, dst: Path, dry_run: bool) -> None:
     src = Path(str(src))
     if dry_run:
-        console.print(f"[yellow]DRY RUN:[/yellow] copytree {src} -> {dst}")
+        progress.console.print(f"[yellow]DRY RUN:[/yellow] copytree {src} -> {dst}")
         return
     if dst.exists():
         shutil.rmtree(dst)
     shutil.copytree(src, dst)
-    console.print(f"[green]Copied[/green] {src} -> {dst}")
+    progress.console.print(f"[green]Copied[/green] {src} -> {dst}")
 
 
 def install(dry_run: bool = False, compact: bool = False) -> None:
@@ -51,11 +51,18 @@ def install(dry_run: bool = False, compact: bool = False) -> None:
     ]
 
     with Progress(
-        SpinnerColumn(),
-        TextColumn("[bold #90DBE5]{task.description}"),
-        BarColumn(bar_width=60),
+        SpinnerColumn(style="cyan"),
+        TextColumn("[bold #90DBE5]{task.description}", justify="center"),
+        BarColumn(
+            bar_width=120,              # MUCH wider
+            complete_style="#90DBE5",
+            finished_style="#90DBE5",
+            pulse_style="#90DBE5",
+        ),
         TaskProgressColumn(),
+        TimeElapsedColumn(),
         console=console,
+        expand=True
     ) as progress:
 
         task = progress.add_task("Installing configs...", total=len(steps))
@@ -142,14 +149,14 @@ def bootstrap(dry_run: bool = False, compact: bool = False) -> None:
                 pass
 
             elif isinstance(action, list):
-                run_command(action, dry_run)
+                run_command(progress, action, dry_run, compact)
 
             elif isinstance(action, tuple):
                 kind, src, dst = action
                 if kind == "copy_file":
-                    copy_file(src, dst, dry_run)
+                    copy_file(progress, src, dst, dry_run)
                 elif kind == "copy_tree":
-                    copy_tree(src, dst, dry_run)
+                    copy_tree(progress, src, dst, dry_run)
 
             progress.advance(task)
 
@@ -158,16 +165,24 @@ def bootstrap(dry_run: bool = False, compact: bool = False) -> None:
 def tool_exists(name:str) -> bool:
     return shutil.which(name) is not None
 
-def run_command(cmd: list[str], dry_run: bool) -> None:
+def run_command(progress: Progress, cmd: list[str], dry_run: bool, compact: bool = False) -> None:
     if dry_run:
+        progress.console.print(f"[yellow]DRY RUN:[/yellow] {' '.join(cmd)}")
         return
 
-    subprocess.run(
+    process = subprocess.Popen(
         cmd,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
     )
-    
+
+    if process.stdout:
+        for line in process.stdout:
+            if not compact:
+                progress.console.print(line.rstrip())
+
+    process.wait()
 
 def show_logo() -> None:
     console.clear()

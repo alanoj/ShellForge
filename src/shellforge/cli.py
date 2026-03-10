@@ -18,9 +18,11 @@ def install(dry_run: bool = False) -> None:
 
 
 @shellforge.command()
-def bootstrap(dry_run: bool = False) -> None:
-    """Run the full Shellforge setup flow."""
-    installer.bootstrap(dry_run=dry_run)
+def bootstrap(
+    dry_run: bool = typer.Option(False, "--dry-run", help="Run without making changes"),
+    compact: bool = typer.Option(False, "--compact", help="Hide install logs"),
+):
+    installer.bootstrap(dry_run=dry_run, compact=compact)
 
 
 @shellforge.command()

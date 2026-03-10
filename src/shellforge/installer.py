@@ -69,7 +69,7 @@ def install(dry_run: bool = False, compact: bool = False) -> None:
 
         for description, func, src, dst in steps:
             progress.update(task, description=description)
-            func(src, dst, dry_run=dry_run)
+            func(progress, src, dst, dry_run=dry_run)
             progress.advance(task)
 
 
@@ -265,5 +265,5 @@ def install_system_tools(dry_run: bool, compact: bool = False) -> None:
                 continue
 
             progress.update(task, description=f"Installing {package}")
-            run_command(["brew", "install", package], dry_run)
+            run_command(progress, ["brew", "install", package], dry_run)
             progress.advance(task)

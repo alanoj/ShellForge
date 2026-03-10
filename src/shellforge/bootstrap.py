@@ -17,18 +17,20 @@ console = Console()
 
 class LogPanel:
     def __init__(self, max_lines=10):
-        self.lines = []
+        # keep full log history
+        self.history = []
         self.max_lines = max_lines
 
     def log(self, message: str):
-        self.lines.append(message)
-        if len(self.lines) > self.max_lines:
-            self.lines.pop(0)
+        self.history.append(message)
 
     def __rich__(self):
         table = Table.grid()
-        for line in self.lines:
+
+        # render only the last N lines
+        for line in self.history[-self.max_lines:]:
             table.add_row(line)
+
         return Panel(
             table,
             title="Logs",
@@ -86,7 +88,10 @@ def bootstrap(dry_run=False, compact=False):
         live.update(layout)
 
         for description, action in steps:
-            progress.update(task, description=f"[bold #90DBE5]{description}[/bold #90DBE5]")
+            progress.update(
+                task,
+                description=f"[bold #90DBE5]{description}[/bold #90DBE5]"
+            )
             if action is None:
                 log_panel.log(f"[green]✓ {description}[/green]")
             elif isinstance(action, list):

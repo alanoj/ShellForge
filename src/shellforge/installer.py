@@ -1,5 +1,4 @@
 from rich.console import Console
-from rich.progress import Progress, SpinnerColumn, BarColumn, TaskProgressColumn, TextColumn
 from shellforge.ui.progress import create_progress_bar
 from shellforge.core.files import copy_file, copy_tree
 from shellforge import paths
@@ -32,10 +31,10 @@ def install(dry_run=False):
             kind, src, dst = action
 
             if kind == "copy_file":
-                copy_file(progress, task, src, dst, dry_run)
+                copy_file(src, dst, dry_run)
 
             elif kind == "copy_tree":
-                copy_tree(progress, task, src, dst, dry_run)
+                copy_tree(src, dst, dry_run)
 
             progress.advance(task)
 

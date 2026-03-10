@@ -1,5 +1,4 @@
 from rich.console import Console, Group
-from rich.progress import Progress, SpinnerColumn, BarColumn, TaskProgressColumn, TextColumn
 from rich.panel import Panel
 from rich.align import Align
 from rich.live import Live
@@ -112,7 +111,7 @@ def bootstrap(dry_run=False, compact=False):
                         log_panel.log(f"[yellow]DRY RUN[/yellow]: copy {src} → {dst}")                        
                     else:
                         log_panel.log(f"[cyan]Copying[/cyan] {src} → {dst}")
-                        copy_file(progress, task, src, dst, dry_run)
+                        copy_file(src, dst, dry_run)
 
                 elif kind == "copy_tree":
 
@@ -120,7 +119,7 @@ def bootstrap(dry_run=False, compact=False):
                         log_panel.log(f"[yellow]DRY RUN[/yellow]: copytree {src} → {dst}")
                     else:
                         log_panel.log(f"[cyan]Copying directory[/cyan] {src} → {dst}")
-                        copy_tree(progress, task, src, dst, dry_run)
+                        copy_tree(src, dst, dry_run)
 
             progress.advance(task)
 

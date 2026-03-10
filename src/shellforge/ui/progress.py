@@ -4,7 +4,6 @@ from rich.progress import (
     SpinnerColumn,
     BarColumn,
     TaskProgressColumn,
-    TextColumn,
     TimeElapsedColumn,
 )
 from rich.panel import Panel
@@ -16,7 +15,6 @@ def create_progress_bar(total_steps: int):
 
     progress = Progress(
         SpinnerColumn(style="#90DBE5"),
-        TextColumn("[bold #90DBE5]{task.description}"),
         BarColumn(
             bar_width=120,
             complete_style="#90DBE5",
@@ -26,7 +24,7 @@ def create_progress_bar(total_steps: int):
         TaskProgressColumn(),
         TimeElapsedColumn(),
         expand=True,
-        console=None,   # ⭐ CRITICAL: prevents duplicate rendering
+        console=None,
     )
 
     progress_panel = Panel(
@@ -37,4 +35,4 @@ def create_progress_bar(total_steps: int):
         expand=True
     )
 
-    return progress_panel, progress, total_steps
+    return progress_panel, progress

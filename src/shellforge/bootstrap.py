@@ -17,7 +17,6 @@ console = Console()
 
 class LogPanel:
     def __init__(self, max_lines=10):
-        # keep full log history
         self.history = []
         self.max_lines = max_lines
 
@@ -27,7 +26,6 @@ class LogPanel:
     def __rich__(self):
         table = Table.grid()
 
-        # render only the last N lines
         for line in self.history[-self.max_lines:]:
             table.add_row(line)
 
@@ -58,8 +56,7 @@ def bootstrap(dry_run=False, compact=False):
     for binary, package in tools.items():
 
         if tool_exists(binary):
-            steps.append((f"[bold dark_orange]{binary}[/bold dark_orange] already installed", None))
-
+            steps.append((f"{binary} already installed", None))
         else:
             steps.append((f"Installing {package}", ["brew", "install", package]))
 
@@ -72,31 +69,40 @@ def bootstrap(dry_run=False, compact=False):
 
     log_panel = LogPanel()
 
-    progress_panel, progress, _ = create_progress_bar(len(steps))
-    task = progress.add_task(
-        "[bold #90DBE5]Initializing ShellForge bootstrap...[/bold #90DBE5]",
-        total=len(steps)
-    )
+    progress_panel, progress = create_progress_bar(len(steps))
+
+    task = progress.add_task("", total=len(steps))
+
+    current_step = "[bold #90DBE5]Initializing ShellForge bootstrap...[/bold #90DBE5]"
 
     layout = Group(
-        Align.center(progress_panel, vertical="middle"),
+        Align.center(current_step),
+        Align.center(progress_panel),
         log_panel
     )
 
     with Live(layout, console=console, refresh_per_second=10) as live:
-        # Force an initial render so Rich tracks the layout correctly
-        live.update(layout)
 
         for description, action in steps:
-            progress.update(
-                task,
-                description=f"[bold #90DBE5]{description}[/bold #90DBE5]"
+
+            current_step = f"[bold #90DBE5]{description}[/bold #90DBE5]"
+
+            layout = Group(
+                Align.center(current_step),
+                Align.center(progress_panel),
+                log_panel
             )
+
+            live.update(layout)
+
             if action is None:
+
                 log_panel.log(f"[green]✓ {description}[/green]")
+
             elif isinstance(action, list):
 
                 log_panel.log(f"[cyan]➜ Running[/cyan]: {' '.join(action)}")
+
                 run_command(
                     progress,
                     task,
@@ -113,7 +119,7 @@ def bootstrap(dry_run=False, compact=False):
                 if kind == "copy_file":
 
                     if dry_run:
-                        log_panel.log(f"[yellow]DRY RUN[/yellow]: copy {src} → {dst}")                        
+                        log_panel.log(f"[yellow]DRY RUN[/yellow]: copy {src} → {dst}")
                     else:
                         log_panel.log(f"[cyan]Copying[/cyan] {src} → {dst}")
                         copy_file(src, dst, dry_run)

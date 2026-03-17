@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="520" height="40" viewBox="0 0 520 40" xmlns="http://www.w3.org/2000/svg">
+
+  <style>
+    .spinner {
+      transform-box: fill-box;
+      transform-origin: 50% 50%;
+      animation: spin 2s ease-in-out infinite;
+      fill: #90DBE5;
+    }
+
+    .label {
+      fill: #90DBE5;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 18px;
+      dominant-baseline: middle;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+
+  <!-- spinning gear -->
+  <g transform="translate(4,4) scale(1.2)">
+    <path class="spinner"
+      d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.97 19.05,5.05L16.56,6.05C16.04,5.65 15.44,5.32 14.8,5.07L14.43,2.42C14.38,2.19 14.17,2 13.93,2H9.93C9.68,2 9.48,2.19 9.44,2.42L9.07,5.07C8.43,5.32 7.83,5.65 7.31,6.05L4.82,5.05C4.6,4.97 4.33,5.05 4.21,5.27L2.21,8.73C2.09,8.95 2.14,9.22 2.33,9.37L4.44,11C4.4,11.34 4.37,11.67 4.37,12C4.37,12.33 4.4,12.65 4.44,12.97L2.33,14.63C2.14,14.78 2.09,15.05 2.21,15.27L4.21,18.73C4.33,18.95 4.6,19.03 4.82,18.95L7.31,17.95C7.83,18.35 8.43,18.68 9.07,18.93L9.44,21.58C9.48,21.81 9.68,22 9.93,22H13.93C14.17,22 14.38,21.81 14.43,21.58L14.8,18.93C15.44,18.68 16.04,18.35 16.56,17.95L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" />
+  </g>
+
+  <!-- tagline text -->
+  <text class="label" x="44" y="20">ShellForge — Terminal Environment Bootstrap</text>
+
+</svg>

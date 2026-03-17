@@ -15,7 +15,7 @@ def install(dry_run=False):
         ("Installing Neovim configuration", ("copy_tree", paths.NVIM_SOURCE, paths.NVIM_TARGET)),
     ]
 
-    progress_panel, progress, _ = create_progress_bar(len(steps))
+    progress_panel, progress = create_progress_bar(console, len(steps))
     console.print(progress_panel)
     with progress:
 

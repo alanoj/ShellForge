@@ -69,7 +69,7 @@ def bootstrap(dry_run=False, compact=False):
 
     log_panel = LogPanel()
 
-    progress_panel, progress = create_progress_bar(len(steps))
+    progress_panel, progress = create_progress_bar(console, len(steps))
 
     task = progress.add_task("", total=len(steps))
 
@@ -137,4 +137,7 @@ def bootstrap(dry_run=False, compact=False):
             if not isinstance(action, list):
                 progress.advance(task)
 
-    console.print("\n[bold green]Bootstrap complete.[/bold green]")
+    console.print("\n[bold green]󰄭 Bootstrap complete.[/bold green]")
+    console.print(
+        "[bold #90DBE5]Open a new terminal or run [white]exec zsh[/white] to load the new ShellForge environment.[/bold #90DBE5]"
+    )

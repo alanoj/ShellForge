@@ -35,7 +35,8 @@ def run_command(
             if not line:
                 continue
 
-            if verbose and log_callback:
+            # Send all command output to the log panel so Live controls rendering
+            if log_callback:
                 log_callback(line)
 
             # Detect dependency list from brew and expand total steps

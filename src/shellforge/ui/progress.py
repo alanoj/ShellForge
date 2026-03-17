@@ -8,15 +8,13 @@ from rich.progress import (
 )
 from rich.panel import Panel
 
-console = Console()
 
-
-def create_progress_bar(total_steps: int):
+def create_progress_bar(console: Console, total_steps: int):
 
     progress = Progress(
         SpinnerColumn(style="#90DBE5"),
         BarColumn(
-            bar_width=120,
+            bar_width=None,
             complete_style="#DD4874",
             finished_style="green_yellow",
             pulse_style="#90DBE5",
@@ -24,7 +22,7 @@ def create_progress_bar(total_steps: int):
         TaskProgressColumn(),
         TimeElapsedColumn(),
         expand=True,
-        console=None,
+        console=console,
     )
 
     progress_panel = Panel(

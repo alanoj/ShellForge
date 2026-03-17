@@ -1,6 +1,16 @@
-# ShellForge
 
 ![ShellForge Banner](docs/assets/shellforge-banner.png)
+<p align="center">
+  <img src="docs/assets/gear.svg" width="540" />
+</p>
+
+---
+
+<p align="center">
+  <a href="https://github.com/alanoj/ShellForge/stargazers"><img src="https://img.shields.io/github/stars/alanoj/ShellForge?color=FFA726&style=for-the-badge" alt="Stars"></a>
+  <a href="https://github.com/alanoj/ShellForge/releases"><img src="https://img.shields.io/github/v/release/alanoj/ShellForge?color=26C6DA&style=for-the-badge" alt="Release"></a>
+  <a href="https://github.com/alanoj/ShellForge/blob/main/LICENSE"><img src="https://img.shields.io/github/license/alanoj/ShellForge?color=66BB6A&style=for-the-badge" alt="License"></a>
+</p>
 
 **ShellForge** is a reproducible terminal environment bootstrap tool designed to recreate a complete development CLI environment on any machine.
 
@@ -20,12 +30,6 @@ ShellForge demonstrates DevOps‑style environment automation through:
 ## Install Demo
 
 ![ShellForge Install Demo](docs/assets/install-demo.gif)
-
-Video version:
-
-```
-docs/assets/install-demo.mp4
-```
 
 
 The installer provides a live terminal UI with:

@@ -1,6 +1,6 @@
 import shutil
 from pathlib import Path
-from importlib.abc import Traversable
+from importlib.resources.abc import Traversable
 
 
 def ensure_parent(path: Path, dry_run: bool):

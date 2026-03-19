@@ -14,7 +14,7 @@ NVIM_SOURCE = ASSETS / "nvim"
 ZSHRC_SOURCE = ASSETS / "shell" / ".zshrc"
 
 # Target install locations
-OMP_TARGET = HOME / ".config" / "oh-my-posh" / "themes" / "shellforge.omp.json"
+OMP_TARGET = HOME / ".config" / "ohmyposh" / "themes" / "shellforge.omp.json"
 GHOSTTY_TARGET = HOME / ".config" / "ghostty" / "config"
 NVIM_TARGET = HOME / ".config" / "nvim"
 ZSHRC_TARGET = HOME / ".zshrc"

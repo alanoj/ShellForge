@@ -1,9 +1,6 @@
-from rich.console import Console
-from shellforge.ui.progress import create_progress_bar
+from shellforge.runtime.events import emit
 from shellforge.core.files import copy_file, copy_tree
 from shellforge import paths
-
-console = Console()
 
 
 def install(dry_run=False):
@@ -15,27 +12,20 @@ def install(dry_run=False):
         ("Installing Neovim configuration", ("copy_tree", paths.NVIM_SOURCE, paths.NVIM_TARGET)),
     ]
 
-    progress_panel, progress = create_progress_bar(console, len(steps))
-    console.print(progress_panel)
-    with progress:
+    emit("progress", {"total": len(steps)})
 
-        task = progress.add_task(
-            "[bold #90DBE5]Installing ShellForge configs...[/bold #90DBE5]",
-            total=len(steps)
-        )
+    for description, action in steps:
 
-        for description, action in steps:
+        emit("task", {"message": description})
 
-            progress.update(task, description=description)
+        kind, src, dst = action
 
-            kind, src, dst = action
+        if kind == "copy_file":
+            copy_file(src, dst, dry_run)
 
-            if kind == "copy_file":
-                copy_file(src, dst, dry_run)
+        elif kind == "copy_tree":
+            copy_tree(src, dst, dry_run)
 
-            elif kind == "copy_tree":
-                copy_tree(src, dst, dry_run)
+        emit("progress", {"advance": 1})
 
-            progress.advance(task)
-
-    console.print("[bold green]Install complete.[/bold green]")
+    emit("log", {"message": "[bold green]Install complete.[/bold green]"})

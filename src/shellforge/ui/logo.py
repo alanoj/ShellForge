@@ -1,58 +1,79 @@
+import os
 import shutil
-import subprocess
-import textwrap
+import base64
 from pathlib import Path
+from rich.console import Group
 from rich.console import Console
-from importlib.resources import files
+from rich.align import Align
+from rich.text import Text
 
 console = Console()
 
-def show_logo() -> None:
-    console.clear()
+ROOT = Path(__file__).resolve().parents[3]
+ASSETS_DIR = ROOT / "docs" / "assets"
 
-    # Detect Docker (kitty graphics usually unsupported there)
-    running_in_docker = Path("/.dockerenv").exists()
 
-    logo = files("shellforge.assets").joinpath("logo.png")
-    logo_path = Path(str(logo))
+def supports_graphics():
+    return os.environ.get("TERM_PROGRAM", "").lower() in ["ghostty", "kitty", "wezterm"]
 
-    image_rendered = False
-    cols, rows = shutil.get_terminal_size()
-    width = int(cols * 0.7)
-    height = 6
 
-    if not running_in_docker and logo_path.exists():
+def _encode_image(path: Path):
+    with open(path, "rb") as f:
+        return base64.b64encode(f.read()).decode()
+
+
+def _render_image(encoded: str, width_px: int, height_px: int):
+    print(f"\033_Gf=100,a=T,s={width_px},v={height_px};{encoded}\033\\", flush=True)
+
+
+def show_logo():
+    banner = ASSETS_DIR / "shellforge-banner.png"
+    if supports_graphics():
         try:
-            subprocess.run(
-                [
-                    "kitten",
-                    "icat",
-                    "--align=center",
-                    "--place",
-                    f"{width}x{height}@{(cols-width)//2}x0",
-                    str(logo_path),
-                ],
-                check=False,
-            )
-            print("\n" * (height + 1))
-            image_rendered = True
-        except Exception:
-            image_rendered = False
+            cols, rows = shutil.get_terminal_size()
 
-    # ASCII fallback if image rendering failed
-    if not image_rendered:
-        ascii_logo = textwrap.dedent("""
+            cell_w = 8
+            cell_h = 16
+
+            banner_width = int(cols * cell_w * 0.55)
+            banner_height = int(rows * cell_h * 0.18)
+
+            encoded_banner = _encode_image(banner)
+
+            padding = " " * int((cols - (banner_width // cell_w)) / 2)
+
+            print(padding, end="")
+            _render_image(encoded_banner, banner_width, banner_height)
+            subtitle = Text(
+                "\uf013 ShellForge — Terminal Environment Bootstrap",
+                style="bold #90DBE5"
+            )
+
+            console.print(Align.center(subtitle))
+            print()
+            return
+
+        except Exception as e:
+            print("IMAGE RENDER ERROR:", e)
+
+    _render_ascii()
+
+
+def _render_ascii():
+    ascii_logo = r"""
 ███████╗██╗  ██╗███████╗██╗     ██╗     ███████╗ ██████╗ ██████╗  ██████╗ ███████╗
 ██╔════╝██║  ██║██╔════╝██║     ██║     ██╔════╝██╔═══██╗██╔══██╗██╔════╝ ██╔════╝
 ███████╗███████║█████╗  ██║     ██║     █████╗  ██║   ██║██████╔╝██║  ███╗█████╗
 ╚════██║██╔══██║██╔══╝  ██║     ██║     ██╔══╝  ██║   ██║██╔══██╗██║   ██║██╔══╝
 ███████║██║  ██║███████╗███████╗███████╗██║     ╚██████╔╝██║  ██║╚██████╔╝███████╗
 ╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝╚═╝      ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝
-""")
-        console.print(f"[bold #90DBE5]{ascii_logo}[/bold #90DBE5]", justify="center")
+"""
 
-    # Subtitle
-    console.print(
-        "[bold #90DBE5]  ShellForge — Terminal Environment Bootstrap[/bold #90DBE5]\n",
-        justify="center",
+    console.print(Align.center(f"[bold #90DBE5]{ascii_logo}[/bold #90DBE5]"))
+
+    subtitle = Text(
+        "⚙ ShellForge — Terminal Environment Bootstrap",
+        style="bold #90DBE5"
     )
+
+    console.print(Align.center(subtitle))

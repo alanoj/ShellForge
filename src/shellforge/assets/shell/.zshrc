@@ -43,7 +43,7 @@ zinit cdreplay -q
 # Oh My Posh (ShellForge Theme)
 ########################################
 if [[ "$TERM_PROGRAM" != "Apple_Terminal" ]]; then
-    eval "$(oh-my-posh init zsh --config ~/.config/ohmyposh/shellforge.omp.json)"
+    eval "$(oh-my-posh init zsh --config ~/.config/ohmyposh/themes/shellforge.omp.json)"
 fi
 
 ########################################
@@ -102,6 +102,7 @@ alias ls="eza"
 alias grep="grep --color=auto"
 alias tree="tree -C"
 alias pip="pip3"
+alias python="python3"
 alias get_networks=". /usr/local/bin/get_network_info.sh"
 
 ########################################

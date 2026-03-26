@@ -1,0 +1,14 @@
+#input {
+    border: round #90DBE5;
+    background: #0f1115;
+    color: #90DBE5;
+    padding: 0 1;
+}
+
+#input .input--cursor {
+    color: #90DBE5;
+}
+
+#input .input--placeholder {
+    color: #90DBE580;
+}

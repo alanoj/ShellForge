@@ -21,14 +21,24 @@ def replay_logs(speed: str = "normal"):
 
     lines = LOG_FILE.read_text().splitlines()
 
-    # 🔥 fake total for progress bar
-    emit("progress", {"total": len(lines)})
+    total = len(lines)
 
-    emit("task", {"message": "Replaying installation logs..."})
+    emit("task", {
+        "step": 0,
+        "total": total,
+        "message": "Replaying installation logs..."
+    })
 
-    for line in lines:
+    for i, line in enumerate(lines, start=1):
         emit("log", {"message": line})
-        emit("progress", {"advance": 1})
+        emit("task", {
+            "step": i,
+            "total": total
+        })
         time.sleep(delay)
 
-    emit("task", {"message": "Demo complete"})
+    emit("task", {
+        "step": total,
+        "total": total,
+        "message": "Demo complete"
+    })

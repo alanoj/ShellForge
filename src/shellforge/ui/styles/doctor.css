@@ -1,0 +1,40 @@
+DataTable {
+    border: none;
+    background: transparent;
+    align: center top;
+}
+
+DataTable>.datatable--header {
+    background: transparent;
+    color: #90DBE5;
+}
+
+DataTable>.datatable--cell {
+    content-align: center middle;
+}
+
+DataTable>.datatable--header-cell {
+    content-align: center middle;
+}
+
+.doctor-mode-panel {
+    width: 70%;
+    height: auto;
+}
+
+.results-panel {
+    padding: 1 1;
+}
+
+.legend-row {
+    width: 100%;
+    height: auto;
+    align: center middle;
+    padding: 0 6;
+}
+
+.legend-row>Static {
+    width: 1fr;
+    height: 1;
+    content-align: center middle;
+}

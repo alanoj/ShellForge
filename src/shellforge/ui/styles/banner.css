@@ -1,0 +1,16 @@
+#banner-image {
+    height: 12;
+    width: auto;
+}
+
+#subtitle {
+    width: 100%;
+    content-align: center middle;
+    color: #90DBE5;
+}
+
+Banner {
+    height: auto;
+    min-height: 14;
+    margin-bottom: 1;
+}

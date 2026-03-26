@@ -1,72 +1,27 @@
 import typer
-from shellforge import doctor, installer
-from shellforge.bootstrap import bootstrap as bootstrap_cmd
-from shellforge.ui.renderer import Renderer
-from shellforge.runtime.replay import replay_logs
-from shellforge.ui.logo import show_logo
+from shellforge.ui.app import ShellForgeApp
 
-app = typer.Typer(help="ShellForge CLI")
+app = typer.Typer()
 
 
 @app.command()
-def doctor_check(verbose: bool = False):
-    show_logo()
-    doctor.run_checks()
+def demo():
+    ShellForgeApp(start_mode="demo").run()
 
 
 @app.command()
-def install(dry_run: bool = False):
-    renderer = Renderer()
-    renderer.run(lambda: installer.install(dry_run=dry_run))
+def doctor_check():
+    ShellForgeApp(start_mode="doctor").run()
 
 
 @app.command()
-def demo(
-    speed: str = typer.Option("normal", "--speed", help="fast | normal | slow"),
-):
-    show_logo()  # render banner first
-    renderer = Renderer()
-    renderer.run(lambda: replay_logs(speed=speed))
+def install():
+    ShellForgeApp(start_mode="install").run()
 
 
 @app.command()
-def bootstrap(
-    dry_run: bool = typer.Option(False, "--dry-run"),
-    compact: bool = typer.Option(False, "--compact"),
-    terminal: str = typer.Option("ghostty", "--terminal"),
-    speed: str = typer.Option("normal", "--speed", help="fast | normal | slow"),
-    skip_terminal: bool = typer.Option(False, "--skip-terminal"),
-    record: bool = typer.Option(False, "--record", help="Record logs for demo"),
-):
-    if record:
-        print("Starting log recording...")
-
-        bootstrap_cmd(
-            dry_run=dry_run,
-            compact=compact,
-            speed=speed,
-            terminal=terminal,
-            skip_terminal=skip_terminal,
-            record=True
-        )
-
-        print("Done")
-        return
-
-    renderer = Renderer()
-    renderer.run(lambda: bootstrap_cmd(
-        dry_run=dry_run,
-        compact=compact,
-        speed=speed,
-        terminal=terminal,
-        skip_terminal=skip_terminal,
-        record=False
-    ))
-
-
-@app.command()
-def version():
-    print("shellforge 0.1.0")
+def bootstrap():
+    ShellForgeApp(start_mode="bootstrap").run()
 
 
 def main():

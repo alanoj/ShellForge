@@ -11,6 +11,7 @@ PACKAGES = {
         ("bat", "bat"),
         ("tree", "tree"),
         ("lazygit", "lazygit"),
+        ("kitty", "kitty"),
     ],
     "shell": [
         ("zsh", "zsh"),

@@ -1,0 +1,18 @@
+Screen {
+    align: center middle;
+}
+
+#container {
+    width: 80%;
+    layout: vertical;
+}
+
+#mode-root {
+    align: center top;
+}
+
+Footer {
+    background: transparent;
+    height: 3;
+    padding: 0 3;
+}
